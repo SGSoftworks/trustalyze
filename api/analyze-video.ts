@@ -1,14 +1,12 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import axios from "axios";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== "POST")
     return res.status(405).json({ error: "Method not allowed" });
 
-  const { videoBuffer, fileName, mimeType } = req.body as {
+  const { videoBuffer, fileName } = req.body as {
     videoBuffer?: string;
     fileName?: string;
-    mimeType?: string;
   };
 
   if (!videoBuffer || !fileName) {
@@ -54,10 +52,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       justification: `Análisis heurístico de ${fileName}. En producción se integraría extracción real de frames y modelos especializados de detección de deepfake.`,
     };
     return res.status(200).json(result);
-  } catch (err: any) {
+  } catch (err: unknown) {
+    const errorMessage = err instanceof Error ? err.message : "Unknown error";
+    const errorDetails = err && typeof err === "object" && "response" in err 
+      ? (err as { response?: { data?: unknown } }).response?.data 
+      : errorMessage;
+    
     return res.status(500).json({
       error: "Analysis failed",
-      details: err?.response?.data || err?.message,
+      details: errorDetails,
     });
   }
 }

@@ -4,7 +4,13 @@ import type { AnalysisResult } from "../types";
 
 export function ImagesPage() {
   const [file, setFile] = useState<File | null>(null);
-  const [result, setResult] = useState<any>(null);
+  const [result, setResult] = useState<{
+    error?: string;
+    aiProbability?: number;
+    humanProbability?: number;
+    justification?: string;
+    steps?: string[];
+  } | null>(null);
 
   const toBase64 = (f: File) =>
     new Promise<string>((resolve, reject) => {
@@ -32,9 +38,11 @@ export function ImagesPage() {
       steps: data.steps || [],
       createdAt: Date.now(),
     };
-    try {
-      await saveResult(payload);
-    } catch {}
+          try {
+            await saveResult(payload);
+          } catch (error) {
+            console.warn("Failed to save result:", error);
+          }
   };
 
   return (

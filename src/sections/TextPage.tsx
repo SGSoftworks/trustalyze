@@ -4,7 +4,32 @@ import type { AnalysisResult } from "../types";
 
 export function TextPage() {
   const [text, setText] = useState("");
-  const [result, setResult] = useState<any>(null);
+  const [result, setResult] = useState<{
+    error?: string;
+    aiProbability?: number;
+    humanProbability?: number;
+    justification?: string;
+    steps?: string[];
+    inputLength?: number;
+    confidence?: string;
+    analysisAspects?: string[];
+    textAnalysis?: {
+      length: number;
+      wordCount: number;
+      sentenceCount: number;
+      avgWordsPerSentence: number;
+      hasEmotionalLanguage: boolean;
+      hasPersonalPronouns: boolean;
+      hasComplexSentences: boolean;
+      hasRepetitivePatterns: boolean;
+    };
+    detailedExplanation?: {
+      hfAnalysis: string;
+      geminiAnalysis: string;
+      combinedScore: string;
+      methodology: string;
+    };
+  } | null>(null);
   const [loading, setLoading] = useState(false);
 
   const analyze = async () => {
@@ -26,10 +51,16 @@ export function TextPage() {
         steps: data.steps || [],
         inputLength: data.inputLength,
         createdAt: Date.now(),
+        confidence: data.confidence,
+        analysisAspects: data.analysisAspects,
+        textAnalysis: data.textAnalysis,
+        detailedExplanation: data.detailedExplanation,
       };
       try {
         await saveResult(payload);
-      } catch {}
+      } catch (error) {
+        console.warn("Failed to save result:", error);
+      }
     } catch (error) {
       console.error("Error analyzing text:", error);
       setResult({
@@ -225,6 +256,101 @@ export function TextPage() {
                     </p>
                   </div>
                 </div>
+
+                {/* Analysis Aspects */}
+                {result.analysisAspects && result.analysisAspects.length > 0 && (
+                  <div className="mb-8">
+                    <h3 className="text-lg font-semibold text-slate-900 mb-3">
+                      Aspectos Evaluados
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                      {result.analysisAspects.map((aspect: string, i: number) => (
+                        <div key={i} className="flex items-center gap-2 bg-blue-50 rounded-lg p-3">
+                          <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+                          <span className="text-slate-700 text-sm">{aspect}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Text Analysis Details */}
+                {result.textAnalysis && (
+                  <div className="mb-8">
+                    <h3 className="text-lg font-semibold text-slate-900 mb-3">
+                      Análisis Lingüístico Detallado
+                    </h3>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div className="bg-slate-50 rounded-lg p-4 text-center">
+                        <div className="text-2xl font-bold text-slate-900">{result.textAnalysis.wordCount}</div>
+                        <div className="text-sm text-slate-600">Palabras</div>
+                      </div>
+                      <div className="bg-slate-50 rounded-lg p-4 text-center">
+                        <div className="text-2xl font-bold text-slate-900">{result.textAnalysis.sentenceCount}</div>
+                        <div className="text-sm text-slate-600">Oraciones</div>
+                      </div>
+                      <div className="bg-slate-50 rounded-lg p-4 text-center">
+                        <div className="text-2xl font-bold text-slate-900">{result.textAnalysis.avgWordsPerSentence.toFixed(1)}</div>
+                        <div className="text-sm text-slate-600">Palabras/Oración</div>
+                      </div>
+                      <div className="bg-slate-50 rounded-lg p-4 text-center">
+                        <div className="text-2xl font-bold text-slate-900">{result.textAnalysis.length}</div>
+                        <div className="text-sm text-slate-600">Caracteres</div>
+                      </div>
+                    </div>
+                    
+                    <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <h4 className="font-medium text-slate-900">Características Detectadas:</h4>
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <div className={`w-3 h-3 rounded-full ${result.textAnalysis.hasEmotionalLanguage ? 'bg-green-500' : 'bg-gray-300'}`}></div>
+                            <span className="text-sm text-slate-700">Lenguaje emocional</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <div className={`w-3 h-3 rounded-full ${result.textAnalysis.hasPersonalPronouns ? 'bg-green-500' : 'bg-gray-300'}`}></div>
+                            <span className="text-sm text-slate-700">Pronombres personales</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <div className={`w-3 h-3 rounded-full ${result.textAnalysis.hasComplexSentences ? 'bg-green-500' : 'bg-gray-300'}`}></div>
+                            <span className="text-sm text-slate-700">Oraciones complejas</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <div className={`w-3 h-3 rounded-full ${result.textAnalysis.hasRepetitivePatterns ? 'bg-red-500' : 'bg-gray-300'}`}></div>
+                            <span className="text-sm text-slate-700">Patrones repetitivos</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Detailed Explanation */}
+                {result.detailedExplanation && (
+                  <div className="mb-8">
+                    <h3 className="text-lg font-semibold text-slate-900 mb-3">
+                      Explicación Técnica Detallada
+                    </h3>
+                    <div className="bg-slate-50 rounded-lg p-4 space-y-3">
+                      <div>
+                        <span className="font-medium text-slate-900">Hugging Face:</span>
+                        <span className="text-slate-700 ml-2">{result.detailedExplanation.hfAnalysis}</span>
+                      </div>
+                      <div>
+                        <span className="font-medium text-slate-900">Gemini:</span>
+                        <span className="text-slate-700 ml-2">{result.detailedExplanation.geminiAnalysis}</span>
+                      </div>
+                      <div>
+                        <span className="font-medium text-slate-900">Puntuación Final:</span>
+                        <span className="text-slate-700 ml-2">{result.detailedExplanation.combinedScore}</span>
+                      </div>
+                      <div>
+                        <span className="font-medium text-slate-900">Metodología:</span>
+                        <span className="text-slate-700 ml-2">{result.detailedExplanation.methodology}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {/* Analysis Steps */}
                 <div>

@@ -67,10 +67,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       justification: `Análisis del contenido extraído de ${fileName} usando modelo detector de IA.`,
     };
     return res.status(200).json(result);
-  } catch (err: any) {
+  } catch (err: unknown) {
+    const errorMessage = err instanceof Error ? err.message : "Unknown error";
+    const errorDetails = err && typeof err === "object" && "response" in err 
+      ? (err as { response?: { data?: unknown } }).response?.data 
+      : errorMessage;
+    
     return res.status(500).json({
       error: "Analysis failed",
-      details: err?.response?.data || err?.message,
+      details: errorDetails,
     });
   }
 }

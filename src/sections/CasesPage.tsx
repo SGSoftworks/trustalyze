@@ -2,7 +2,11 @@ import { useState } from "react";
 
 export function CasesPage() {
   const [query, setQuery] = useState("detección de deepfakes");
-  const [items, setItems] = useState<any[]>([]);
+  const [items, setItems] = useState<{
+    title: string;
+    link: string;
+    snippet: string;
+  }[]>([]);
 
   const search = async () => {
     const resp = await fetch(

@@ -4,7 +4,15 @@ import type { AnalysisResult } from "../types";
 
 export function DocumentsPage() {
   const [file, setFile] = useState<File | null>(null);
-  const [result, setResult] = useState<any>(null);
+  const [result, setResult] = useState<{
+    error?: string;
+    aiProbability?: number;
+    humanProbability?: number;
+    justification?: string;
+    steps?: string[];
+    fileName?: string;
+    extractedLength?: number;
+  } | null>(null);
   const [loading, setLoading] = useState(false);
 
   const toBase64 = (f: File) =>
@@ -44,9 +52,11 @@ export function DocumentsPage() {
         inputLength: data.extractedLength,
         createdAt: Date.now(),
       };
-      try {
-        await saveResult(payload);
-      } catch {}
+          try {
+            await saveResult(payload);
+          } catch (error) {
+            console.warn("Failed to save result:", error);
+          }
     } finally {
       setLoading(false);
     }

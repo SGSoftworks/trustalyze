@@ -30,12 +30,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         "Modelo de Hugging Face especializado en detección de imágenes generadas por IA.",
     };
     return res.status(200).json(result);
-  } catch (err: any) {
-    return res
-      .status(500)
-      .json({
-        error: "Analysis failed",
-        details: err?.response?.data || err?.message,
-      });
+  } catch (err: unknown) {
+    const errorMessage = err instanceof Error ? err.message : "Unknown error";
+    const errorDetails = err && typeof err === "object" && "response" in err 
+      ? (err as { response?: { data?: unknown } }).response?.data 
+      : errorMessage;
+    
+    return res.status(500).json({
+      error: "Analysis failed",
+      details: errorDetails,
+    });
   }
 }

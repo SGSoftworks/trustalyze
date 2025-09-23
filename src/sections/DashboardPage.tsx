@@ -17,10 +17,10 @@ export function DashboardPage() {
           limit(20)
         );
         const snap = await getDocs(qy);
-        const data = snap.docs.map((d) => ({
-          id: d.id,
-          ...(d.data() as any),
-        })) as AnalysisResult[];
+            const data = snap.docs.map((d) => ({
+              id: d.id,
+              ...(d.data() as Omit<AnalysisResult, 'id'>),
+            })) as AnalysisResult[];
         setItems(data);
       } finally {
         setLoading(false);
