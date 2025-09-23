@@ -19,7 +19,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const buffer = Buffer.from(videoBuffer, "base64");
     const fileSize = buffer.length;
     const fileSizeMB = fileSize / (1024 * 1024);
-    
+
     const geminiPrompt = `Eres un experto en detección de videos generados por IA (deepfakes, contenido sintético). Analiza este video de manera exhaustiva y determina si fue generado por inteligencia artificial o es contenido humano real.
 
 INFORMACIÓN DEL VIDEO:
@@ -74,8 +74,8 @@ Responde ÚNICAMENTE en formato JSON válido:
         contents: [{ parts: [{ text: geminiPrompt }] }],
         generationConfig: {
           temperature: 0.1,
-          maxOutputTokens: 1000
-        }
+          maxOutputTokens: 1000,
+        },
       },
       {
         headers: {
@@ -86,7 +86,8 @@ Responde ÚNICAMENTE en formato JSON válido:
       }
     );
 
-    const geminiText = geminiResp.data?.candidates?.[0]?.content?.parts?.[0]?.text;
+    const geminiText =
+      geminiResp.data?.candidates?.[0]?.content?.parts?.[0]?.text;
     if (!geminiText) {
       throw new Error("No response from Gemini API");
     }
@@ -117,27 +118,39 @@ Responde ÚNICAMENTE en formato JSON válido:
       humanProbability,
       finalDetermination: geminiData.final_determination,
       confidenceLevel: geminiData.confidence_level,
-      methodology: geminiData.methodology || "Análisis exhaustivo con modelo Gemini especializado en videos",
-      interpretation: geminiData.interpretation || `El video muestra características ${geminiData.final_determination === "IA" ? "típicas de generación automática" : "consistentes con grabación humana"}`,
+      methodology:
+        geminiData.methodology ||
+        "Análisis exhaustivo con modelo Gemini especializado en videos",
+      interpretation:
+        geminiData.interpretation ||
+        `El video muestra características ${
+          geminiData.final_determination === "IA"
+            ? "típicas de generación automática"
+            : "consistentes con grabación humana"
+        }`,
       analysisFactors: geminiData.analysis_factors || [],
       keyIndicators: geminiData.key_indicators || [],
       strengths: geminiData.strengths || [],
       weaknesses: geminiData.weaknesses || [],
-      recommendations: geminiData.recommendations || "Para mayor precisión, analice videos de mayor calidad",
+      recommendations:
+        geminiData.recommendations ||
+        "Para mayor precisión, analice videos de mayor calidad",
       technicalDetails: {
         geminiScore: aiProbability,
-        methodology: "Análisis completo con Gemini 2.0 Flash especializado en detección de videos IA",
+        methodology:
+          "Análisis completo con Gemini 2.0 Flash especializado en detección de videos IA",
         modelVersion: "gemini-2.0-flash",
         analysisDepth: "Exhaustivo",
-        videoAnalysis: "Análisis técnico de metadatos y características del video"
-      }
+        videoAnalysis:
+          "Análisis técnico de metadatos y características del video",
+      },
     };
 
     return res.status(200).json(result);
   } catch (err: unknown) {
     console.error("Analysis error:", err);
     const errorMessage = err instanceof Error ? err.message : "Unknown error";
-    
+
     return res.status(500).json({
       error: "Analysis failed",
       details: errorMessage,

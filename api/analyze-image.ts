@@ -61,21 +61,23 @@ Responde ÚNICAMENTE en formato JSON válido:
       process.env.GEMINI_API_ENDPOINT ||
         "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent",
       {
-        contents: [{ 
-          parts: [
-            { text: geminiPrompt },
-            { 
-              inline_data: {
-                mime_type: "image/jpeg",
-                data: imageBase64
-              }
-            }
-          ] 
-        }],
+        contents: [
+          {
+            parts: [
+              { text: geminiPrompt },
+              {
+                inline_data: {
+                  mime_type: "image/jpeg",
+                  data: imageBase64,
+                },
+              },
+            ],
+          },
+        ],
         generationConfig: {
           temperature: 0.1,
-          maxOutputTokens: 1000
-        }
+          maxOutputTokens: 1000,
+        },
       },
       {
         headers: {
@@ -86,7 +88,8 @@ Responde ÚNICAMENTE en formato JSON válido:
       }
     );
 
-    const geminiText = geminiResp.data?.candidates?.[0]?.content?.parts?.[0]?.text;
+    const geminiText =
+      geminiResp.data?.candidates?.[0]?.content?.parts?.[0]?.text;
     if (!geminiText) {
       throw new Error("No response from Gemini API");
     }
@@ -114,27 +117,38 @@ Responde ÚNICAMENTE en formato JSON válido:
       humanProbability,
       finalDetermination: geminiData.final_determination,
       confidenceLevel: geminiData.confidence_level,
-      methodology: geminiData.methodology || "Análisis exhaustivo con modelo Gemini especializado en imágenes",
-      interpretation: geminiData.interpretation || `La imagen muestra características ${geminiData.final_determination === "IA" ? "típicas de generación automática" : "consistentes con creación humana"}`,
+      methodology:
+        geminiData.methodology ||
+        "Análisis exhaustivo con modelo Gemini especializado en imágenes",
+      interpretation:
+        geminiData.interpretation ||
+        `La imagen muestra características ${
+          geminiData.final_determination === "IA"
+            ? "típicas de generación automática"
+            : "consistentes con creación humana"
+        }`,
       analysisFactors: geminiData.analysis_factors || [],
       keyIndicators: geminiData.key_indicators || [],
       strengths: geminiData.strengths || [],
       weaknesses: geminiData.weaknesses || [],
-      recommendations: geminiData.recommendations || "Para mayor precisión, analice imágenes de mayor resolución",
+      recommendations:
+        geminiData.recommendations ||
+        "Para mayor precisión, analice imágenes de mayor resolución",
       technicalDetails: {
         geminiScore: aiProbability,
-        methodology: "Análisis completo con Gemini 2.0 Flash especializado en detección de imágenes IA",
+        methodology:
+          "Análisis completo con Gemini 2.0 Flash especializado en detección de imágenes IA",
         modelVersion: "gemini-2.0-flash",
         analysisDepth: "Exhaustivo",
-        imageAnalysis: "Análisis visual directo de la imagen"
-      }
+        imageAnalysis: "Análisis visual directo de la imagen",
+      },
     };
 
     return res.status(200).json(result);
   } catch (err: unknown) {
     console.error("Analysis error:", err);
     const errorMessage = err instanceof Error ? err.message : "Unknown error";
-    
+
     return res.status(500).json({
       error: "Analysis failed",
       details: errorMessage,
