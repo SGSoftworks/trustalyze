@@ -17,24 +17,24 @@ export function VideosPage() {
 
   const analyze = async () => {
     if (!file) return;
-    
+
     setLoading(true);
     setResult(null);
-    
+
     try {
       const videoBuffer = await toBase64(file);
       const resp = await fetch("/api/analyze-video", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          videoBuffer, 
-          fileName: file.name, 
-          mimeType: file.type 
+        body: JSON.stringify({
+          videoBuffer,
+          fileName: file.name,
+          mimeType: file.type,
         }),
       });
       const data = await resp.json();
       setResult(data);
-      
+
       const payload: AnalysisResult = {
         kind: "video",
         aiProbability: data.aiProbability,
@@ -55,25 +55,26 @@ export function VideosPage() {
     <div className="space-y-4">
       <h1 className="text-2xl font-semibold">Análisis de Videos</h1>
       <p className="text-slate-600">
-        Análisis heurístico de videos para detección de deepfakes. 
-        Soporta formatos MP4, AVI, MOV y otros.
+        Análisis heurístico de videos para detección de deepfakes. Soporta
+        formatos MP4, AVI, MOV y otros.
       </p>
-      
-      <input 
-        type="file" 
+
+      <input
+        type="file"
         accept="video/*"
-        onChange={(e) => setFile(e.target.files?.[0] || null)} 
+        onChange={(e) => setFile(e.target.files?.[0] || null)}
         className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
       />
-      
+
       {file && (
         <div className="p-3 bg-slate-50 rounded-md">
           <p className="text-sm">
-            <strong>Video seleccionado:</strong> {file.name} ({(file.size / (1024 * 1024)).toFixed(1)} MB)
+            <strong>Video seleccionado:</strong> {file.name} (
+            {(file.size / (1024 * 1024)).toFixed(1)} MB)
           </p>
         </div>
       )}
-      
+
       {file && (
         <button
           onClick={analyze}
@@ -83,18 +84,22 @@ export function VideosPage() {
           {loading ? "Analizando..." : "Analizar Video"}
         </button>
       )}
-      
+
       {result && (
         <div className="rounded-lg border p-4 bg-white">
           <div className="font-medium mb-2">Resultado del Análisis</div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
             <div>
               <div className="text-sm text-slate-500">Probabilidad IA</div>
-              <div className="text-2xl font-semibold">{result.aiProbability}%</div>
+              <div className="text-2xl font-semibold">
+                {result.aiProbability}%
+              </div>
             </div>
             <div>
               <div className="text-sm text-slate-500">Probabilidad Humano</div>
-              <div className="text-2xl font-semibold">{result.humanProbability}%</div>
+              <div className="text-2xl font-semibold">
+                {result.humanProbability}%
+              </div>
             </div>
           </div>
           <div className="mb-4">

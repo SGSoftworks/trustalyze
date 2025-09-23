@@ -7,10 +7,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== "POST")
     return res.status(405).json({ error: "Method not allowed" });
 
-  const { fileBuffer, fileName, mimeType } = req.body as { 
-    fileBuffer?: string; 
-    fileName?: string; 
-    mimeType?: string; 
+  const { fileBuffer, fileName, mimeType } = req.body as {
+    fileBuffer?: string;
+    fileName?: string;
+    mimeType?: string;
   };
 
   if (!fileBuffer || !fileName) {
@@ -19,20 +19,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     let extractedText = "";
-    const buffer = Buffer.from(fileBuffer, 'base64');
+    const buffer = Buffer.from(fileBuffer, "base64");
 
     // Extraer texto según el tipo de archivo
-    if (mimeType === "application/pdf" || fileName.toLowerCase().endsWith('.pdf')) {
+    if (
+      mimeType === "application/pdf" ||
+      fileName.toLowerCase().endsWith(".pdf")
+    ) {
       const pdfData = await pdf(buffer);
       extractedText = pdfData.text;
     } else if (
-      mimeType === "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
-      fileName.toLowerCase().endsWith('.docx')
+      mimeType ===
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
+      fileName.toLowerCase().endsWith(".docx")
     ) {
       const result = await mammoth.extractRawText({ buffer });
       extractedText = result.value;
-    } else if (fileName.toLowerCase().endsWith('.txt')) {
-      extractedText = buffer.toString('utf-8');
+    } else if (fileName.toLowerCase().endsWith(".txt")) {
+      extractedText = buffer.toString("utf-8");
     } else {
       return res.status(400).json({ error: "Unsupported file type" });
     }
@@ -64,11 +68,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     };
     return res.status(200).json(result);
   } catch (err: any) {
-    return res
-      .status(500)
-      .json({
-        error: "Analysis failed",
-        details: err?.response?.data || err?.message,
-      });
+    return res.status(500).json({
+      error: "Analysis failed",
+      details: err?.response?.data || err?.message,
+    });
   }
 }

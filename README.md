@@ -40,12 +40,29 @@ npm install
 npm run dev
 ```
 
+## Configuración de Firebase
+
+1. **Crear proyecto en Firebase Console:**
+   - Ve a https://console.firebase.google.com/
+   - Crea un nuevo proyecto
+   - Habilita Firestore Database
+
+2. **Configurar Firestore:**
+   - En Firebase Console > Firestore Database > Rules
+   - Copia y pega el contenido de `firestore.rules`
+   - Publica las reglas
+
+3. **Obtener configuración:**
+   - En Project Settings > General > Your apps
+   - Agrega una app web
+   - Copia la configuración a tu `.env.local`
+
 ## Despliegue en Vercel
 
 1. Conecta el repo con Vercel.
 2. En Project Settings > Environment Variables agrega:
    - HF_API_KEY, GEMINI_API_KEY, GEMINI_API_ENDPOINT, GOOGLE_SEARCH_API_KEY, GOOGLE_SEARCH_CX
-   - VITE*FIREBASE*\* (también pueden residir en `.env.local` para desarrollo)
+   - VITE_FIREBASE_* (todas las variables de Firebase)
 3. Build & Output:
    - Build Command: `npm run vercel-build`
    - Output Directory: `dist`
@@ -55,10 +72,26 @@ Las funciones en `api/` se implementan automáticamente como Serverless Function
 
 ## Arquitectura
 
-- Frontend: React + Vite + Tailwind.
-- Backend: Rutas serverless en `api/` para análisis (texto, documento, imagen, video) y `search-related`.
-- Persistencia: Firebase Firestore (`src/lib/firebase.ts`, `src/lib/store.ts`).
-- Rutas UI: `src/routes.tsx` con secciones: Texto, Documentos, Imágenes, Videos, Casos, Dashboard y Privacidad.
+- **Frontend**: React + Vite + TailwindCSS 3.4.x
+- **Backend**: Rutas serverless en `api/` para análisis (texto, documento, imagen, video) y `search-related`
+- **Persistencia**: Firebase Firestore con colección `results` para almacenar análisis
+- **Rutas UI**: `src/routes.tsx` con secciones: Texto, Documentos, Imágenes, Videos, Casos, Dashboard y Privacidad
+
+### Estructura de datos en Firestore
+
+```javascript
+// Colección: results
+{
+  kind: "texto" | "documento" | "imagen" | "video" | "caso",
+  aiProbability: number, // 0-100
+  humanProbability: number, // 0-100
+  justification: string,
+  steps: string[],
+  inputLength?: number,
+  createdAt: number, // timestamp
+  ts: serverTimestamp // para ordenamiento
+}
+```
 
 ## Seguridad y privacidad
 

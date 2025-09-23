@@ -17,24 +17,24 @@ export function DocumentsPage() {
 
   const analyze = async () => {
     if (!file) return;
-    
+
     setLoading(true);
     setResult(null);
-    
+
     try {
       const fileBuffer = await toBase64(file);
       const resp = await fetch("/api/analyze-file", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          fileBuffer, 
-          fileName: file.name, 
-          mimeType: file.type 
+        body: JSON.stringify({
+          fileBuffer,
+          fileName: file.name,
+          mimeType: file.type,
         }),
       });
       const data = await resp.json();
       setResult(data);
-      
+
       const payload: AnalysisResult = {
         kind: "documento",
         aiProbability: data.aiProbability,
@@ -56,24 +56,26 @@ export function DocumentsPage() {
     <div className="space-y-4">
       <h1 className="text-2xl font-semibold">Análisis de Documentos</h1>
       <p className="text-slate-600">
-        Soporta archivos PDF, DOCX y TXT. El sistema extraerá el texto automáticamente.
+        Soporta archivos PDF, DOCX y TXT. El sistema extraerá el texto
+        automáticamente.
       </p>
-      
-      <input 
-        type="file" 
+
+      <input
+        type="file"
         accept=".pdf,.docx,.txt"
-        onChange={(e) => setFile(e.target.files?.[0] || null)} 
+        onChange={(e) => setFile(e.target.files?.[0] || null)}
         className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
       />
-      
+
       {file && (
         <div className="p-3 bg-slate-50 rounded-md">
           <p className="text-sm">
-            <strong>Archivo seleccionado:</strong> {file.name} ({(file.size / 1024).toFixed(1)} KB)
+            <strong>Archivo seleccionado:</strong> {file.name} (
+            {(file.size / 1024).toFixed(1)} KB)
           </p>
         </div>
       )}
-      
+
       {file && (
         <button
           onClick={analyze}
@@ -83,18 +85,22 @@ export function DocumentsPage() {
           {loading ? "Analizando..." : "Analizar Documento"}
         </button>
       )}
-      
+
       {result && (
         <div className="rounded-lg border p-4 bg-white">
           <div className="font-medium mb-2">Resultado del Análisis</div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
             <div>
               <div className="text-sm text-slate-500">Probabilidad IA</div>
-              <div className="text-2xl font-semibold">{result.aiProbability}%</div>
+              <div className="text-2xl font-semibold">
+                {result.aiProbability}%
+              </div>
             </div>
             <div>
               <div className="text-sm text-slate-500">Probabilidad Humano</div>
-              <div className="text-2xl font-semibold">{result.humanProbability}%</div>
+              <div className="text-2xl font-semibold">
+                {result.humanProbability}%
+              </div>
             </div>
           </div>
           <div className="mb-4">
