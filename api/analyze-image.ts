@@ -1,4 +1,4 @@
-// Vercel Serverless Function - Análisis de Imágenes con IA
+// Vercel Serverless Function - Análisis de Imágenes REAL con Gemini
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import axios from "axios";
 
@@ -11,194 +11,133 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(400).json({ error: "Missing imageBase64" });
 
   try {
-    // 1. Análisis con Hugging Face - Detección de imágenes generadas por IA
-    let hfScore = 0.5;
-    let hfAnalysis = "Análisis de Hugging Face no disponible";
+    // Análisis REAL con Gemini - Evaluación visual y contextual
+    const geminiPrompt = `Eres un experto en detección de imágenes generadas por IA. Analiza esta imagen de manera exhaustiva y determina si fue generada por inteligencia artificial o es una fotografía/ilustración humana.
 
-    try {
-      const hfResp = await axios.post(
-        "https://api-inference.huggingface.co/models/umm-maybe/ai-image-detector",
-        { inputs: imageBase64 },
-        {
-          headers: { Authorization: `Bearer ${process.env.HF_API_KEY}` },
-          timeout: 15000,
-        }
-      );
+IMAGEN A ANALIZAR:
+[Imagen proporcionada en base64]
 
-      hfScore = hfResp.data?.score ?? 0.5;
-      hfAnalysis = `Modelo especializado detectó ${(hfScore * 100).toFixed(
-        1
-      )}% probabilidad de generación por IA`;
-    } catch (hfError) {
-      console.warn("HF API error:", hfError);
-    }
-
-    // 2. Análisis con Gemini - Evaluación visual y contextual
-    let geminiData: any = null;
-
-    try {
-      const geminiPrompt = `Eres un experto en detección de imágenes generadas por IA. Analiza esta imagen y determina si fue generada por inteligencia artificial o es una fotografía/ilustración humana.
-
-METODOLOGÍA DE ANÁLISIS VISUAL:
-1. **Análisis de Patrones**: Detecta patrones repetitivos, artefactos de generación
-2. **Análisis de Texturas**: Evalúa la naturalidad de texturas y superficies
-3. **Análisis de Composición**: Verifica la coherencia composicional y perspectiva
-4. **Análisis de Detalles**: Examina la precisión en detalles finos y bordes
-5. **Análisis de Iluminación**: Evalúa la coherencia de la iluminación
-6. **Análisis de Anatomía**: Si hay personas, verifica proporciones y anatomía
-7. **Análisis de Artefactos**: Identifica marcas típicas de generación por IA
+METODOLOGÍA DE ANÁLISIS PROFESIONAL VISUAL:
+1. **Análisis de Patrones**: Detecta patrones repetitivos, artefactos de generación y anomalías
+2. **Análisis de Texturas**: Evalúa la naturalidad de texturas, superficies y materiales
+3. **Análisis de Composición**: Verifica coherencia composicional, perspectiva y geometría
+4. **Análisis de Detalles**: Examina la precisión en detalles finos, bordes y transiciones
+5. **Análisis de Iluminación**: Evalúa la coherencia de la iluminación y sombras
+6. **Análisis de Anatomía**: Si hay personas, verifica proporciones, anatomía y fisiología
+7. **Análisis de Artefactos**: Identifica marcas típicas de generación por IA y errores
 8. **Análisis de Estilo**: Evalúa consistencia estilística y artística
+9. **Análisis de Resolución**: Detecta patrones de resolución y compresión artificial
+10. **Análisis de Contexto**: Evalúa coherencia contextual y realismo general
 
-IMPORTANTE: 
-- Sé específico y técnico en tu análisis visual
-- Proporciona una determinación clara (IA o Humano)
-- Justifica cada factor con evidencia visual concreta
-- Usa un rango de probabilidad realista (no 50-50)
+INSTRUCCIONES CRÍTICAS:
+- Realiza un análisis PROFUNDO y TÉCNICO de la imagen
+- Proporciona una determinación CLARA y DEFINITIVA (IA o Humano)
+- Calcula porcentajes REALES basados en evidencia visual concreta
+- Justifica cada factor con observaciones específicas de la imagen
+- Usa un rango de probabilidad REALISTA basado en el análisis visual
+- Sé ESPECÍFICO en tus observaciones técnicas
 
-Responde en formato JSON:
+Responde ÚNICAMENTE en formato JSON válido:
 {
   "ai_probability": 0.0-1.0,
   "final_determination": "IA" o "Humano",
   "confidence_level": "Alta", "Media" o "Baja",
-  "methodology": "Descripción de cómo se realizó el análisis visual",
-  "interpretation": "Qué significa este resultado en términos prácticos",
+  "methodology": "Descripción detallada de la metodología de análisis visual aplicada",
+  "interpretation": "Interpretación clara del resultado en términos prácticos",
   "analysis_factors": [
     {
-      "factor": "nombre del factor visual",
+      "factor": "nombre específico del factor visual analizado",
       "score": 0.0-1.0,
-      "explanation": "explicación detallada de por qué este factor indica IA o humano"
+      "explanation": "explicación detallada con observaciones específicas de la imagen"
     }
   ],
-  "key_indicators": ["indicador1", "indicador2", "indicador3"],
-  "strengths": ["fortalezas que apoyan la determinación"],
-  "weaknesses": ["limitaciones o puntos débiles"],
-  "recommendations": "Recomendaciones para verificación adicional si es necesario"
+  "key_indicators": ["indicador visual específico 1", "indicador visual específico 2", "indicador visual específico 3"],
+  "strengths": ["fortaleza específica que apoya la determinación"],
+  "weaknesses": ["limitación específica identificada"],
+  "recommendations": "Recomendación específica para verificación adicional"
 }`;
 
-      const geminiResp = await axios.post(
-        process.env.GEMINI_API_ENDPOINT ||
-          "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent",
-        {
-          contents: [{ parts: [{ text: geminiPrompt }] }],
-          generationConfig: {
-            temperature: 0.1,
-            maxOutputTokens: 800,
-          },
+    const geminiResp = await axios.post(
+      process.env.GEMINI_API_ENDPOINT ||
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent",
+      {
+        contents: [{ 
+          parts: [
+            { text: geminiPrompt },
+            { 
+              inline_data: {
+                mime_type: "image/jpeg",
+                data: imageBase64
+              }
+            }
+          ] 
+        }],
+        generationConfig: {
+          temperature: 0.1,
+          maxOutputTokens: 1000
+        }
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          "x-goog-api-key": process.env.GEMINI_API_KEY,
         },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            "x-goog-api-key": process.env.GEMINI_API_KEY,
-          },
-          timeout: 20000,
-        }
-      );
-
-      const geminiText =
-        geminiResp.data?.candidates?.[0]?.content?.parts?.[0]?.text;
-      if (geminiText) {
-        try {
-          geminiData = JSON.parse(geminiText);
-        } catch {
-          geminiData = {
-            ai_probability: 0.5,
-            final_determination: "Indeterminado",
-            confidence_level: "Baja",
-            methodology: "Análisis visual básico por limitaciones técnicas",
-            interpretation: "No se pudo realizar análisis visual completo",
-            analysis_factors: [],
-            key_indicators: ["Análisis limitado"],
-            strengths: [],
-            weaknesses: ["Respuesta de IA no estructurada"],
-            recommendations:
-              "Intente con una imagen de mayor resolución o diferente formato",
-          };
-        }
+        timeout: 30000,
       }
-    } catch (geminiError) {
-      console.warn("Gemini API error:", geminiError);
+    );
+
+    const geminiText = geminiResp.data?.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!geminiText) {
+      throw new Error("No response from Gemini API");
     }
 
-    // 3. Combinar resultados con pesos
-    const geminiScore = geminiData?.ai_probability || 0.5;
-    const finalScore = hfScore * 0.7 + geminiScore * 0.3; // Más peso a HF para imágenes
-    const aiProbability = Number((finalScore * 100).toFixed(2));
-    const humanProbability = Number(((1 - finalScore) * 100).toFixed(2));
+    // Parsear respuesta JSON de Gemini
+    let geminiData;
+    try {
+      geminiData = JSON.parse(geminiText);
+    } catch (parseError) {
+      console.error("Failed to parse Gemini response:", geminiText);
+      throw new Error("Invalid JSON response from Gemini");
+    }
 
-    // Determinar resultado final
-    const finalDetermination = finalScore > 0.6 ? "IA" : "Humano";
-    const confidenceLevel =
-      finalScore > 0.8 || finalScore < 0.2
-        ? "Alta"
-        : finalScore > 0.7 || finalScore < 0.3
-        ? "Media"
-        : "Baja";
+    // Validar estructura de respuesta
+    if (!geminiData.ai_probability || !geminiData.final_determination) {
+      throw new Error("Invalid response structure from Gemini");
+    }
+
+    // Calcular probabilidades REALES
+    const aiProbability = Math.round(geminiData.ai_probability * 100);
+    const humanProbability = Math.round((1 - geminiData.ai_probability) * 100);
 
     const result = {
       aiProbability,
       humanProbability,
-      finalDetermination,
-      confidenceLevel,
-      methodology:
-        geminiData?.methodology ||
-        "Análisis combinado con modelos especializados en detección de imágenes",
-      interpretation:
-        geminiData?.interpretation ||
-        `La imagen muestra características ${
-          finalDetermination === "IA"
-            ? "típicas de generación automática"
-            : "consistentes con creación humana"
-        }`,
-      analysisFactors: geminiData?.analysis_factors || [
-        {
-          factor: "Análisis de Patrones",
-          score: hfScore,
-          explanation: `Modelo Hugging Face detectó patrones ${
-            hfScore > 0.5 ? "de generación por IA" : "de creación humana"
-          } con ${(hfScore * 100).toFixed(1)}% de confianza`,
-        },
-        {
-          factor: "Análisis Visual Contextual",
-          score: geminiScore,
-          explanation: `Evaluación visual de Gemini: ${(
-            geminiScore * 100
-          ).toFixed(1)}% probabilidad de generación automática`,
-        },
-      ],
-      keyIndicators: geminiData?.key_indicators || [
-        "Análisis de patrones visuales",
-        "Evaluación de texturas",
-        "Detección de artefactos",
-      ],
-      strengths: geminiData?.strengths || [
-        `Análisis realizado con ${confidenceLevel.toLowerCase()} confianza`,
-      ],
-      weaknesses: geminiData?.weaknesses || [
-        "Limitaciones en el análisis debido a la resolución de la imagen",
-      ],
-      recommendations:
-        geminiData?.recommendations ||
-        "Para mayor precisión, analice imágenes de mayor resolución y calidad",
+      finalDetermination: geminiData.final_determination,
+      confidenceLevel: geminiData.confidence_level,
+      methodology: geminiData.methodology || "Análisis exhaustivo con modelo Gemini especializado en imágenes",
+      interpretation: geminiData.interpretation || `La imagen muestra características ${geminiData.final_determination === "IA" ? "típicas de generación automática" : "consistentes con creación humana"}`,
+      analysisFactors: geminiData.analysis_factors || [],
+      keyIndicators: geminiData.key_indicators || [],
+      strengths: geminiData.strengths || [],
+      weaknesses: geminiData.weaknesses || [],
+      recommendations: geminiData.recommendations || "Para mayor precisión, analice imágenes de mayor resolución",
       technicalDetails: {
-        hfScore: Number((hfScore * 100).toFixed(1)),
-        geminiScore: Number((geminiScore * 100).toFixed(1)),
-        combinedScore: Number((finalScore * 100).toFixed(1)),
-        methodology: "70% Hugging Face + 30% Gemini para análisis visual",
-      },
+        geminiScore: aiProbability,
+        methodology: "Análisis completo con Gemini 2.0 Flash especializado en detección de imágenes IA",
+        modelVersion: "gemini-2.0-flash",
+        analysisDepth: "Exhaustivo",
+        imageAnalysis: "Análisis visual directo de la imagen"
+      }
     };
 
     return res.status(200).json(result);
   } catch (err: unknown) {
     console.error("Analysis error:", err);
     const errorMessage = err instanceof Error ? err.message : "Unknown error";
-    const errorDetails =
-      err && typeof err === "object" && "response" in err
-        ? (err as { response?: { data?: unknown } }).response?.data
-        : errorMessage;
-
+    
     return res.status(500).json({
       error: "Analysis failed",
-      details: errorDetails,
+      details: errorMessage,
     });
   }
 }
