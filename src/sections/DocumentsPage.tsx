@@ -52,11 +52,11 @@ export function DocumentsPage() {
         inputLength: data.extractedLength,
         createdAt: Date.now(),
       };
-          try {
-            await saveResult(payload);
-          } catch (error) {
-            console.warn("Failed to save result:", error);
-          }
+      try {
+        await saveResult(payload);
+      } catch (error) {
+        console.warn("Failed to save result:", error);
+      }
     } finally {
       setLoading(false);
     }

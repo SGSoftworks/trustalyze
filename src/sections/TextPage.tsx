@@ -8,11 +8,20 @@ export function TextPage() {
     error?: string;
     aiProbability?: number;
     humanProbability?: number;
-    justification?: string;
-    steps?: string[];
+    finalDetermination?: string;
+    confidenceLevel?: string;
+    methodology?: string;
+    interpretation?: string;
+    analysisFactors?: Array<{
+      factor: string;
+      score: number;
+      explanation: string;
+    }>;
+    keyIndicators?: string[];
+    strengths?: string[];
+    weaknesses?: string[];
+    recommendations?: string;
     inputLength?: number;
-    confidence?: string;
-    analysisAspects?: string[];
     textAnalysis?: {
       length: number;
       wordCount: number;
@@ -23,10 +32,10 @@ export function TextPage() {
       hasComplexSentences: boolean;
       hasRepetitivePatterns: boolean;
     };
-    detailedExplanation?: {
-      hfAnalysis: string;
-      geminiAnalysis: string;
-      combinedScore: string;
+    technicalDetails?: {
+      hfScore: number;
+      geminiScore: number;
+      combinedScore: number;
       methodology: string;
     };
   } | null>(null);
@@ -47,14 +56,19 @@ export function TextPage() {
         kind: "texto",
         aiProbability: data.aiProbability,
         humanProbability: data.humanProbability,
-        justification: data.justification,
-        steps: data.steps || [],
+        finalDetermination: data.finalDetermination,
+        confidenceLevel: data.confidenceLevel,
+        methodology: data.methodology,
+        interpretation: data.interpretation,
+        analysisFactors: data.analysisFactors,
+        keyIndicators: data.keyIndicators,
+        strengths: data.strengths,
+        weaknesses: data.weaknesses,
+        recommendations: data.recommendations,
         inputLength: data.inputLength,
         createdAt: Date.now(),
-        confidence: data.confidence,
-        analysisAspects: data.analysisAspects,
         textAnalysis: data.textAnalysis,
-        detailedExplanation: data.detailedExplanation,
+        technicalDetails: data.technicalDetails,
       };
       try {
         await saveResult(payload);
@@ -225,49 +239,119 @@ export function TextPage() {
                   </div>
                 </div>
 
-                {/* Confidence Level */}
-                {result.confidence && (
-                  <div className="mb-6">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="text-sm font-medium text-slate-700">
-                        Nivel de confianza:
-                      </span>
-                      <span
-                        className={`px-3 py-1 rounded-full text-sm font-medium ${
-                          result.confidence === "Alta"
-                            ? "bg-green-100 text-green-800"
-                            : "bg-yellow-100 text-yellow-800"
-                        }`}
-                      >
-                        {result.confidence}
-                      </span>
+                {/* Final Determination */}
+                {result.finalDetermination && (
+                  <div className="mb-8">
+                    <div className="text-center">
+                      <div className={`inline-flex items-center gap-3 px-6 py-4 rounded-xl font-semibold text-lg ${
+                        result.finalDetermination === "IA" 
+                          ? "bg-red-100 text-red-800 border-2 border-red-200" 
+                          : "bg-green-100 text-green-800 border-2 border-green-200"
+                      }`}>
+                        <div className={`w-4 h-4 rounded-full ${
+                          result.finalDetermination === "IA" ? "bg-red-500" : "bg-green-500"
+                        }`}></div>
+                        <span>Determinación Final: {result.finalDetermination}</span>
+                      </div>
+                      {result.confidenceLevel && (
+                        <div className="mt-3">
+                          <span className="text-sm font-medium text-slate-700">
+                            Nivel de confianza: 
+                          </span>
+                          <span className={`ml-2 px-3 py-1 rounded-full text-sm font-medium ${
+                            result.confidenceLevel === "Alta"
+                              ? "bg-green-100 text-green-800"
+                              : result.confidenceLevel === "Media"
+                              ? "bg-yellow-100 text-yellow-800"
+                              : "bg-red-100 text-red-800"
+                          }`}>
+                            {result.confidenceLevel}
+                          </span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
 
-                {/* Justification */}
-                <div className="mb-8">
-                  <h3 className="text-lg font-semibold text-slate-900 mb-3">
-                    Justificación del Análisis
-                  </h3>
-                  <div className="bg-slate-50 rounded-lg p-4">
-                    <p className="text-slate-700 leading-relaxed">
-                      {result.justification}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Analysis Aspects */}
-                {result.analysisAspects && result.analysisAspects.length > 0 && (
+                {/* Interpretation */}
+                {result.interpretation && (
                   <div className="mb-8">
                     <h3 className="text-lg font-semibold text-slate-900 mb-3">
-                      Aspectos Evaluados
+                      Interpretación del Resultado
+                    </h3>
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                      <p className="text-slate-700 leading-relaxed">
+                        {result.interpretation}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Methodology */}
+                {result.methodology && (
+                  <div className="mb-8">
+                    <h3 className="text-lg font-semibold text-slate-900 mb-3">
+                      Metodología de Análisis
+                    </h3>
+                    <div className="bg-slate-50 rounded-lg p-4">
+                      <p className="text-slate-700 leading-relaxed">
+                        {result.methodology}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Analysis Factors */}
+                {result.analysisFactors && result.analysisFactors.length > 0 && (
+                  <div className="mb-8">
+                    <h3 className="text-lg font-semibold text-slate-900 mb-3">
+                      Factores de Análisis
+                    </h3>
+                    <div className="space-y-4">
+                      {result.analysisFactors.map((factor, i) => (
+                        <div key={i} className="bg-white border border-slate-200 rounded-lg p-4">
+                          <div className="flex items-center justify-between mb-2">
+                            <h4 className="font-medium text-slate-900">{factor.factor}</h4>
+                            <div className="flex items-center gap-2">
+                              <div className="w-20 bg-slate-200 rounded-full h-2">
+                                <div 
+                                  className={`h-2 rounded-full ${
+                                    factor.score > 0.6 ? 'bg-red-500' : 
+                                    factor.score < 0.4 ? 'bg-green-500' : 'bg-yellow-500'
+                                  }`}
+                                  style={{ width: `${factor.score * 100}%` }}
+                                ></div>
+                              </div>
+                              <span className="text-sm font-medium text-slate-600">
+                                {(factor.score * 100).toFixed(0)}%
+                              </span>
+                            </div>
+                          </div>
+                          <p className="text-slate-700 text-sm leading-relaxed">
+                            {factor.explanation}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Key Indicators */}
+                {result.keyIndicators && result.keyIndicators.length > 0 && (
+                  <div className="mb-8">
+                    <h3 className="text-lg font-semibold text-slate-900 mb-3">
+                      Indicadores Clave
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                      {result.analysisAspects.map((aspect: string, i: number) => (
-                        <div key={i} className="flex items-center gap-2 bg-blue-50 rounded-lg p-3">
+                      {result.keyIndicators.map((indicator: string, i: number) => (
+                        <div
+                          key={i}
+                          className="flex items-center gap-2 bg-blue-50 rounded-lg p-3"
+                        >
                           <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
-                          <span className="text-slate-700 text-sm">{aspect}</span>
+                          <span className="text-slate-700 text-sm">
+                            {indicator}
+                          </span>
                         </div>
                       ))}
                     </div>
@@ -282,42 +366,86 @@ export function TextPage() {
                     </h3>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       <div className="bg-slate-50 rounded-lg p-4 text-center">
-                        <div className="text-2xl font-bold text-slate-900">{result.textAnalysis.wordCount}</div>
+                        <div className="text-2xl font-bold text-slate-900">
+                          {result.textAnalysis.wordCount}
+                        </div>
                         <div className="text-sm text-slate-600">Palabras</div>
                       </div>
                       <div className="bg-slate-50 rounded-lg p-4 text-center">
-                        <div className="text-2xl font-bold text-slate-900">{result.textAnalysis.sentenceCount}</div>
+                        <div className="text-2xl font-bold text-slate-900">
+                          {result.textAnalysis.sentenceCount}
+                        </div>
                         <div className="text-sm text-slate-600">Oraciones</div>
                       </div>
                       <div className="bg-slate-50 rounded-lg p-4 text-center">
-                        <div className="text-2xl font-bold text-slate-900">{result.textAnalysis.avgWordsPerSentence.toFixed(1)}</div>
-                        <div className="text-sm text-slate-600">Palabras/Oración</div>
+                        <div className="text-2xl font-bold text-slate-900">
+                          {result.textAnalysis.avgWordsPerSentence.toFixed(1)}
+                        </div>
+                        <div className="text-sm text-slate-600">
+                          Palabras/Oración
+                        </div>
                       </div>
                       <div className="bg-slate-50 rounded-lg p-4 text-center">
-                        <div className="text-2xl font-bold text-slate-900">{result.textAnalysis.length}</div>
+                        <div className="text-2xl font-bold text-slate-900">
+                          {result.textAnalysis.length}
+                        </div>
                         <div className="text-sm text-slate-600">Caracteres</div>
                       </div>
                     </div>
-                    
+
                     <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <h4 className="font-medium text-slate-900">Características Detectadas:</h4>
+                        <h4 className="font-medium text-slate-900">
+                          Características Detectadas:
+                        </h4>
                         <div className="space-y-1">
                           <div className="flex items-center gap-2">
-                            <div className={`w-3 h-3 rounded-full ${result.textAnalysis.hasEmotionalLanguage ? 'bg-green-500' : 'bg-gray-300'}`}></div>
-                            <span className="text-sm text-slate-700">Lenguaje emocional</span>
+                            <div
+                              className={`w-3 h-3 rounded-full ${
+                                result.textAnalysis.hasEmotionalLanguage
+                                  ? "bg-green-500"
+                                  : "bg-gray-300"
+                              }`}
+                            ></div>
+                            <span className="text-sm text-slate-700">
+                              Lenguaje emocional
+                            </span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <div className={`w-3 h-3 rounded-full ${result.textAnalysis.hasPersonalPronouns ? 'bg-green-500' : 'bg-gray-300'}`}></div>
-                            <span className="text-sm text-slate-700">Pronombres personales</span>
+                            <div
+                              className={`w-3 h-3 rounded-full ${
+                                result.textAnalysis.hasPersonalPronouns
+                                  ? "bg-green-500"
+                                  : "bg-gray-300"
+                              }`}
+                            ></div>
+                            <span className="text-sm text-slate-700">
+                              Pronombres personales
+                            </span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <div className={`w-3 h-3 rounded-full ${result.textAnalysis.hasComplexSentences ? 'bg-green-500' : 'bg-gray-300'}`}></div>
-                            <span className="text-sm text-slate-700">Oraciones complejas</span>
+                            <div
+                              className={`w-3 h-3 rounded-full ${
+                                result.textAnalysis.hasComplexSentences
+                                  ? "bg-green-500"
+                                  : "bg-gray-300"
+                              }`}
+                            ></div>
+                            <span className="text-sm text-slate-700">
+                              Oraciones complejas
+                            </span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <div className={`w-3 h-3 rounded-full ${result.textAnalysis.hasRepetitivePatterns ? 'bg-red-500' : 'bg-gray-300'}`}></div>
-                            <span className="text-sm text-slate-700">Patrones repetitivos</span>
+                            <div
+                              className={`w-3 h-3 rounded-full ${
+                                result.textAnalysis.hasRepetitivePatterns
+                                  ? "bg-red-500"
+                                  : "bg-gray-300"
+                              }`}
+                            ></div>
+                            <span className="text-sm text-slate-700">
+                              Patrones repetitivos
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -325,49 +453,83 @@ export function TextPage() {
                   </div>
                 )}
 
-                {/* Detailed Explanation */}
-                {result.detailedExplanation && (
+                {/* Strengths and Weaknesses */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                  {result.strengths && result.strengths.length > 0 && (
+                    <div>
+                      <h3 className="text-lg font-semibold text-slate-900 mb-3">
+                        Fortalezas del Análisis
+                      </h3>
+                      <div className="space-y-2">
+                        {result.strengths.map((strength: string, i: number) => (
+                          <div key={i} className="flex items-start gap-2 bg-green-50 rounded-lg p-3">
+                            <div className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
+                            <span className="text-slate-700 text-sm">{strength}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {result.weaknesses && result.weaknesses.length > 0 && (
+                    <div>
+                      <h3 className="text-lg font-semibold text-slate-900 mb-3">
+                        Limitaciones Identificadas
+                      </h3>
+                      <div className="space-y-2">
+                        {result.weaknesses.map((weakness: string, i: number) => (
+                          <div key={i} className="flex items-start gap-2 bg-yellow-50 rounded-lg p-3">
+                            <div className="w-2 h-2 bg-yellow-500 rounded-full mt-2 flex-shrink-0"></div>
+                            <span className="text-slate-700 text-sm">{weakness}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Recommendations */}
+                {result.recommendations && (
                   <div className="mb-8">
                     <h3 className="text-lg font-semibold text-slate-900 mb-3">
-                      Explicación Técnica Detallada
+                      Recomendaciones
                     </h3>
-                    <div className="bg-slate-50 rounded-lg p-4 space-y-3">
-                      <div>
-                        <span className="font-medium text-slate-900">Hugging Face:</span>
-                        <span className="text-slate-700 ml-2">{result.detailedExplanation.hfAnalysis}</span>
-                      </div>
-                      <div>
-                        <span className="font-medium text-slate-900">Gemini:</span>
-                        <span className="text-slate-700 ml-2">{result.detailedExplanation.geminiAnalysis}</span>
-                      </div>
-                      <div>
-                        <span className="font-medium text-slate-900">Puntuación Final:</span>
-                        <span className="text-slate-700 ml-2">{result.detailedExplanation.combinedScore}</span>
-                      </div>
-                      <div>
-                        <span className="font-medium text-slate-900">Metodología:</span>
-                        <span className="text-slate-700 ml-2">{result.detailedExplanation.methodology}</span>
-                      </div>
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                      <p className="text-slate-700 leading-relaxed">
+                        {result.recommendations}
+                      </p>
                     </div>
                   </div>
                 )}
 
-                {/* Analysis Steps */}
-                <div>
-                  <h3 className="text-lg font-semibold text-slate-900 mb-3">
-                    Proceso de Análisis
-                  </h3>
-                  <div className="space-y-3">
-                    {result.steps?.map((step: string, i: number) => (
-                      <div key={i} className="flex items-start gap-3">
-                        <div className="w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-sm font-semibold flex-shrink-0">
-                          {i + 1}
+                {/* Technical Details */}
+                {result.technicalDetails && (
+                  <div className="mb-8">
+                    <h3 className="text-lg font-semibold text-slate-900 mb-3">
+                      Detalles Técnicos
+                    </h3>
+                    <div className="bg-slate-50 rounded-lg p-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                        <div>
+                          <span className="font-medium text-slate-900">Hugging Face:</span>
+                          <span className="text-slate-700 ml-2">{result.technicalDetails.hfScore}%</span>
                         </div>
-                        <p className="text-slate-700 pt-1">{step}</p>
+                        <div>
+                          <span className="font-medium text-slate-900">Gemini:</span>
+                          <span className="text-slate-700 ml-2">{result.technicalDetails.geminiScore}%</span>
+                        </div>
+                        <div>
+                          <span className="font-medium text-slate-900">Puntuación Combinada:</span>
+                          <span className="text-slate-700 ml-2">{result.technicalDetails.combinedScore}%</span>
+                        </div>
+                        <div>
+                          <span className="font-medium text-slate-900">Metodología:</span>
+                          <span className="text-slate-700 ml-2">{result.technicalDetails.methodology}</span>
+                        </div>
                       </div>
-                    ))}
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {/* Additional Info */}
                 <div className="mt-8 pt-6 border-t border-slate-200">

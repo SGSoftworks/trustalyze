@@ -15,18 +15,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       q
     )}`;
     const { data } = await axios.get(url);
-        const items = (data.items || []).map((it: { title: string; link: string; snippet: string }) => ({
-          title: it.title,
-          link: it.link,
-          snippet: it.snippet,
-        }));
+    const items = (data.items || []).map(
+      (it: { title: string; link: string; snippet: string }) => ({
+        title: it.title,
+        link: it.link,
+        snippet: it.snippet,
+      })
+    );
     return res.status(200).json({ items });
   } catch (err: unknown) {
     const errorMessage = err instanceof Error ? err.message : "Unknown error";
-    const errorDetails = err && typeof err === "object" && "response" in err 
-      ? (err as { response?: { data?: unknown } }).response?.data 
-      : errorMessage;
-    
+    const errorDetails =
+      err && typeof err === "object" && "response" in err
+        ? (err as { response?: { data?: unknown } }).response?.data
+        : errorMessage;
+
     return res.status(500).json({
       error: "Search failed",
       details: errorDetails,

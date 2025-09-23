@@ -11,10 +11,16 @@ export interface TextAnalysis {
   hasRepetitivePatterns: boolean;
 }
 
-export interface DetailedExplanation {
-  hfAnalysis: string;
-  geminiAnalysis: string;
-  combinedScore: string;
+export interface AnalysisFactor {
+  factor: string;
+  score: number;
+  explanation: string;
+}
+
+export interface TechnicalDetails {
+  hfScore: number;
+  geminiScore: number;
+  combinedScore: number;
   methodology: string;
 }
 
@@ -25,10 +31,15 @@ export interface AnalysisResult {
   inputLength?: number;
   aiProbability: number; // 0-100
   humanProbability: number; // 0-100
-  justification: string;
-  steps: string[];
-  confidence?: string;
-  analysisAspects?: string[];
+  finalDetermination?: string;
+  confidenceLevel?: string;
+  methodology?: string;
+  interpretation?: string;
+  analysisFactors?: AnalysisFactor[];
+  keyIndicators?: string[];
+  strengths?: string[];
+  weaknesses?: string[];
+  recommendations?: string;
   textAnalysis?: TextAnalysis;
-  detailedExplanation?: DetailedExplanation;
+  technicalDetails?: TechnicalDetails;
 }

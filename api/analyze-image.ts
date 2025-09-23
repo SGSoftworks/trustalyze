@@ -32,10 +32,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(200).json(result);
   } catch (err: unknown) {
     const errorMessage = err instanceof Error ? err.message : "Unknown error";
-    const errorDetails = err && typeof err === "object" && "response" in err 
-      ? (err as { response?: { data?: unknown } }).response?.data 
-      : errorMessage;
-    
+    const errorDetails =
+      err && typeof err === "object" && "response" in err
+        ? (err as { response?: { data?: unknown } }).response?.data
+        : errorMessage;
+
     return res.status(500).json({
       error: "Analysis failed",
       details: errorDetails,
