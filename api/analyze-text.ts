@@ -116,7 +116,7 @@ Responde en formato JSON:
             key_indicators: ["Análisis limitado"],
             strengths: [],
             weaknesses: ["Respuesta de IA no estructurada"],
-            recommendations: "Intente con un texto más largo o diferente"
+            recommendations: "Intente con un texto más largo o diferente",
           };
         }
       }
@@ -159,8 +159,12 @@ Responde en formato JSON:
 
     // Determinar resultado final basado en análisis combinado
     const finalDetermination = finalScore > 0.6 ? "IA" : "Humano";
-    const confidenceLevel = finalScore > 0.8 || finalScore < 0.2 ? "Alta" : 
-                           finalScore > 0.7 || finalScore < 0.3 ? "Media" : "Baja";
+    const confidenceLevel =
+      finalScore > 0.8 || finalScore < 0.2
+        ? "Alta"
+        : finalScore > 0.7 || finalScore < 0.3
+        ? "Media"
+        : "Baja";
 
     const result = {
       inputLength: text.length,
@@ -168,31 +172,49 @@ Responde en formato JSON:
       humanProbability,
       finalDetermination,
       confidenceLevel,
-      methodology: geminiData?.methodology || "Análisis combinado con modelos especializados",
-      interpretation: geminiData?.interpretation || `El contenido muestra características ${finalDetermination === "IA" ? "típicas de generación automática" : "consistentes con escritura humana"}`,
+      methodology:
+        geminiData?.methodology ||
+        "Análisis combinado con modelos especializados",
+      interpretation:
+        geminiData?.interpretation ||
+        `El contenido muestra características ${
+          finalDetermination === "IA"
+            ? "típicas de generación automática"
+            : "consistentes con escritura humana"
+        }`,
       analysisFactors: geminiData?.analysis_factors || [
         {
           factor: "Análisis Estructural",
           score: hfScore,
-          explanation: `Modelo Hugging Face detectó patrones ${hfScore > 0.5 ? "de generación por IA" : "de escritura humana"} con ${(hfScore * 100).toFixed(1)}% de confianza`
+          explanation: `Modelo Hugging Face detectó patrones ${
+            hfScore > 0.5 ? "de generación por IA" : "de escritura humana"
+          } con ${(hfScore * 100).toFixed(1)}% de confianza`,
         },
         {
           factor: "Análisis Semántico",
           score: geminiScore,
-          explanation: `Evaluación contextual de Gemini: ${(geminiScore * 100).toFixed(1)}% probabilidad de generación automática`
-        }
+          explanation: `Evaluación contextual de Gemini: ${(
+            geminiScore * 100
+          ).toFixed(1)}% probabilidad de generación automática`,
+        },
       ],
       keyIndicators: analysisAspects,
-      strengths: geminiData?.strengths || [`Análisis realizado con ${confidenceLevel.toLowerCase()} confianza`],
-      weaknesses: geminiData?.weaknesses || ["Limitaciones en el análisis debido a la longitud del texto"],
-      recommendations: geminiData?.recommendations || "Para mayor precisión, analice textos más extensos",
+      strengths: geminiData?.strengths || [
+        `Análisis realizado con ${confidenceLevel.toLowerCase()} confianza`,
+      ],
+      weaknesses: geminiData?.weaknesses || [
+        "Limitaciones en el análisis debido a la longitud del texto",
+      ],
+      recommendations:
+        geminiData?.recommendations ||
+        "Para mayor precisión, analice textos más extensos",
       textAnalysis,
       technicalDetails: {
         hfScore: Number((hfScore * 100).toFixed(1)),
         geminiScore: Number((geminiScore * 100).toFixed(1)),
         combinedScore: Number((finalScore * 100).toFixed(1)),
-        methodology: "60% Hugging Face + 40% Gemini para análisis contextual"
-      }
+        methodology: "60% Hugging Face + 40% Gemini para análisis contextual",
+      },
     };
 
     return res.status(200).json(result);

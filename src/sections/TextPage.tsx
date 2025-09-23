@@ -243,28 +243,38 @@ export function TextPage() {
                 {result.finalDetermination && (
                   <div className="mb-8">
                     <div className="text-center">
-                      <div className={`inline-flex items-center gap-3 px-6 py-4 rounded-xl font-semibold text-lg ${
-                        result.finalDetermination === "IA" 
-                          ? "bg-red-100 text-red-800 border-2 border-red-200" 
-                          : "bg-green-100 text-green-800 border-2 border-green-200"
-                      }`}>
-                        <div className={`w-4 h-4 rounded-full ${
-                          result.finalDetermination === "IA" ? "bg-red-500" : "bg-green-500"
-                        }`}></div>
-                        <span>Determinación Final: {result.finalDetermination}</span>
+                      <div
+                        className={`inline-flex items-center gap-3 px-6 py-4 rounded-xl font-semibold text-lg ${
+                          result.finalDetermination === "IA"
+                            ? "bg-red-100 text-red-800 border-2 border-red-200"
+                            : "bg-green-100 text-green-800 border-2 border-green-200"
+                        }`}
+                      >
+                        <div
+                          className={`w-4 h-4 rounded-full ${
+                            result.finalDetermination === "IA"
+                              ? "bg-red-500"
+                              : "bg-green-500"
+                          }`}
+                        ></div>
+                        <span>
+                          Determinación Final: {result.finalDetermination}
+                        </span>
                       </div>
                       {result.confidenceLevel && (
                         <div className="mt-3">
                           <span className="text-sm font-medium text-slate-700">
-                            Nivel de confianza: 
+                            Nivel de confianza:
                           </span>
-                          <span className={`ml-2 px-3 py-1 rounded-full text-sm font-medium ${
-                            result.confidenceLevel === "Alta"
-                              ? "bg-green-100 text-green-800"
-                              : result.confidenceLevel === "Media"
-                              ? "bg-yellow-100 text-yellow-800"
-                              : "bg-red-100 text-red-800"
-                          }`}>
+                          <span
+                            className={`ml-2 px-3 py-1 rounded-full text-sm font-medium ${
+                              result.confidenceLevel === "Alta"
+                                ? "bg-green-100 text-green-800"
+                                : result.confidenceLevel === "Media"
+                                ? "bg-yellow-100 text-yellow-800"
+                                : "bg-red-100 text-red-800"
+                            }`}
+                          >
                             {result.confidenceLevel}
                           </span>
                         </div>
@@ -302,39 +312,48 @@ export function TextPage() {
                 )}
 
                 {/* Analysis Factors */}
-                {result.analysisFactors && result.analysisFactors.length > 0 && (
-                  <div className="mb-8">
-                    <h3 className="text-lg font-semibold text-slate-900 mb-3">
-                      Factores de Análisis
-                    </h3>
-                    <div className="space-y-4">
-                      {result.analysisFactors.map((factor, i) => (
-                        <div key={i} className="bg-white border border-slate-200 rounded-lg p-4">
-                          <div className="flex items-center justify-between mb-2">
-                            <h4 className="font-medium text-slate-900">{factor.factor}</h4>
-                            <div className="flex items-center gap-2">
-                              <div className="w-20 bg-slate-200 rounded-full h-2">
-                                <div 
-                                  className={`h-2 rounded-full ${
-                                    factor.score > 0.6 ? 'bg-red-500' : 
-                                    factor.score < 0.4 ? 'bg-green-500' : 'bg-yellow-500'
-                                  }`}
-                                  style={{ width: `${factor.score * 100}%` }}
-                                ></div>
+                {result.analysisFactors &&
+                  result.analysisFactors.length > 0 && (
+                    <div className="mb-8">
+                      <h3 className="text-lg font-semibold text-slate-900 mb-3">
+                        Factores de Análisis
+                      </h3>
+                      <div className="space-y-4">
+                        {result.analysisFactors.map((factor, i) => (
+                          <div
+                            key={i}
+                            className="bg-white border border-slate-200 rounded-lg p-4"
+                          >
+                            <div className="flex items-center justify-between mb-2">
+                              <h4 className="font-medium text-slate-900">
+                                {factor.factor}
+                              </h4>
+                              <div className="flex items-center gap-2">
+                                <div className="w-20 bg-slate-200 rounded-full h-2">
+                                  <div
+                                    className={`h-2 rounded-full ${
+                                      factor.score > 0.6
+                                        ? "bg-red-500"
+                                        : factor.score < 0.4
+                                        ? "bg-green-500"
+                                        : "bg-yellow-500"
+                                    }`}
+                                    style={{ width: `${factor.score * 100}%` }}
+                                  ></div>
+                                </div>
+                                <span className="text-sm font-medium text-slate-600">
+                                  {(factor.score * 100).toFixed(0)}%
+                                </span>
                               </div>
-                              <span className="text-sm font-medium text-slate-600">
-                                {(factor.score * 100).toFixed(0)}%
-                              </span>
                             </div>
+                            <p className="text-slate-700 text-sm leading-relaxed">
+                              {factor.explanation}
+                            </p>
                           </div>
-                          <p className="text-slate-700 text-sm leading-relaxed">
-                            {factor.explanation}
-                          </p>
-                        </div>
-                      ))}
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
                 {/* Key Indicators */}
                 {result.keyIndicators && result.keyIndicators.length > 0 && (
@@ -343,17 +362,19 @@ export function TextPage() {
                       Indicadores Clave
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                      {result.keyIndicators.map((indicator: string, i: number) => (
-                        <div
-                          key={i}
-                          className="flex items-center gap-2 bg-blue-50 rounded-lg p-3"
-                        >
-                          <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
-                          <span className="text-slate-700 text-sm">
-                            {indicator}
-                          </span>
-                        </div>
-                      ))}
+                      {result.keyIndicators.map(
+                        (indicator: string, i: number) => (
+                          <div
+                            key={i}
+                            className="flex items-center gap-2 bg-blue-50 rounded-lg p-3"
+                          >
+                            <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+                            <span className="text-slate-700 text-sm">
+                              {indicator}
+                            </span>
+                          </div>
+                        )
+                      )}
                     </div>
                   </div>
                 )}
@@ -462,9 +483,14 @@ export function TextPage() {
                       </h3>
                       <div className="space-y-2">
                         {result.strengths.map((strength: string, i: number) => (
-                          <div key={i} className="flex items-start gap-2 bg-green-50 rounded-lg p-3">
+                          <div
+                            key={i}
+                            className="flex items-start gap-2 bg-green-50 rounded-lg p-3"
+                          >
                             <div className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
-                            <span className="text-slate-700 text-sm">{strength}</span>
+                            <span className="text-slate-700 text-sm">
+                              {strength}
+                            </span>
                           </div>
                         ))}
                       </div>
@@ -477,12 +503,19 @@ export function TextPage() {
                         Limitaciones Identificadas
                       </h3>
                       <div className="space-y-2">
-                        {result.weaknesses.map((weakness: string, i: number) => (
-                          <div key={i} className="flex items-start gap-2 bg-yellow-50 rounded-lg p-3">
-                            <div className="w-2 h-2 bg-yellow-500 rounded-full mt-2 flex-shrink-0"></div>
-                            <span className="text-slate-700 text-sm">{weakness}</span>
-                          </div>
-                        ))}
+                        {result.weaknesses.map(
+                          (weakness: string, i: number) => (
+                            <div
+                              key={i}
+                              className="flex items-start gap-2 bg-yellow-50 rounded-lg p-3"
+                            >
+                              <div className="w-2 h-2 bg-yellow-500 rounded-full mt-2 flex-shrink-0"></div>
+                              <span className="text-slate-700 text-sm">
+                                {weakness}
+                              </span>
+                            </div>
+                          )
+                        )}
                       </div>
                     </div>
                   )}
@@ -511,20 +544,36 @@ export function TextPage() {
                     <div className="bg-slate-50 rounded-lg p-4">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                         <div>
-                          <span className="font-medium text-slate-900">Hugging Face:</span>
-                          <span className="text-slate-700 ml-2">{result.technicalDetails.hfScore}%</span>
+                          <span className="font-medium text-slate-900">
+                            Hugging Face:
+                          </span>
+                          <span className="text-slate-700 ml-2">
+                            {result.technicalDetails.hfScore}%
+                          </span>
                         </div>
                         <div>
-                          <span className="font-medium text-slate-900">Gemini:</span>
-                          <span className="text-slate-700 ml-2">{result.technicalDetails.geminiScore}%</span>
+                          <span className="font-medium text-slate-900">
+                            Gemini:
+                          </span>
+                          <span className="text-slate-700 ml-2">
+                            {result.technicalDetails.geminiScore}%
+                          </span>
                         </div>
                         <div>
-                          <span className="font-medium text-slate-900">Puntuación Combinada:</span>
-                          <span className="text-slate-700 ml-2">{result.technicalDetails.combinedScore}%</span>
+                          <span className="font-medium text-slate-900">
+                            Puntuación Combinada:
+                          </span>
+                          <span className="text-slate-700 ml-2">
+                            {result.technicalDetails.combinedScore}%
+                          </span>
                         </div>
                         <div>
-                          <span className="font-medium text-slate-900">Metodología:</span>
-                          <span className="text-slate-700 ml-2">{result.technicalDetails.methodology}</span>
+                          <span className="font-medium text-slate-900">
+                            Metodología:
+                          </span>
+                          <span className="text-slate-700 ml-2">
+                            {result.technicalDetails.methodology}
+                          </span>
                         </div>
                       </div>
                     </div>
