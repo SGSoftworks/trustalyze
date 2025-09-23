@@ -8,11 +8,29 @@ export function VideosPage() {
     error?: string;
     aiProbability?: number;
     humanProbability?: number;
-    justification?: string;
-    steps?: string[];
+    finalDetermination?: string;
+    confidenceLevel?: string;
+    methodology?: string;
+    interpretation?: string;
+    analysisFactors?: Array<{
+      factor: string;
+      score: number;
+      explanation: string;
+    }>;
+    keyIndicators?: string[];
+    strengths?: string[];
+    weaknesses?: string[];
+    recommendations?: string;
     fileName?: string;
     fileSize?: number;
+    fileSizeMB?: number;
     estimatedFrames?: number;
+    technicalDetails?: {
+      heuristicScore: number;
+      geminiScore: number;
+      combinedScore: number;
+      methodology: string;
+    };
   } | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -38,7 +56,6 @@ export function VideosPage() {
         body: JSON.stringify({
           videoBuffer,
           fileName: file.name,
-          mimeType: file.type,
         }),
       });
       const data = await resp.json();
@@ -48,95 +65,364 @@ export function VideosPage() {
         kind: "video",
         aiProbability: data.aiProbability,
         humanProbability: data.humanProbability,
-        justification: data.justification,
-        steps: data.steps || [],
+        finalDetermination: data.finalDetermination,
+        confidenceLevel: data.confidenceLevel,
+        methodology: data.methodology,
+        interpretation: data.interpretation,
+        analysisFactors: data.analysisFactors,
+        keyIndicators: data.keyIndicators,
+        strengths: data.strengths,
+        weaknesses: data.weaknesses,
+        recommendations: data.recommendations,
         createdAt: Date.now(),
+        technicalDetails: data.technicalDetails,
       };
       try {
         await saveResult(payload);
       } catch (error) {
         console.warn("Failed to save result:", error);
       }
+    } catch (error) {
+      console.error("Error analyzing video:", error);
+      setResult({
+        error: "Error al analizar el video. Por favor, inténtalo de nuevo.",
+      });
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="space-y-4">
-      <h1 className="text-2xl font-semibold">Análisis de Videos</h1>
-      <p className="text-slate-600">
-        Análisis heurístico de videos para detección de deepfakes. Soporta
-        formatos MP4, AVI, MOV y otros.
-      </p>
-
-      <input
-        type="file"
-        accept="video/*"
-        onChange={(e) => setFile(e.target.files?.[0] || null)}
-        className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-      />
-
-      {file && (
-        <div className="p-3 bg-slate-50 rounded-md">
-          <p className="text-sm">
-            <strong>Video seleccionado:</strong> {file.name} (
-            {(file.size / (1024 * 1024)).toFixed(1)} MB)
+    <div className="min-h-screen bg-gradient-to-br from-red-50 to-slate-50 py-12">
+      <div className="max-w-4xl mx-auto px-4">
+        {/* Header */}
+        <div className="text-center mb-12">
+          <h1 className="text-4xl font-bold text-slate-900 mb-4">Análisis de Videos</h1>
+          <p className="text-xl text-slate-600 max-w-2xl mx-auto">
+            Detecta deepfakes y contenido de video generado por IA
           </p>
         </div>
-      )}
 
-      {file && (
-        <button
-          onClick={analyze}
-          disabled={loading}
-          className="px-4 py-2 rounded-md bg-blue-600 text-white disabled:opacity-50"
-        >
-          {loading ? "Analizando..." : "Analizar Video"}
-        </button>
-      )}
-
-      {result && (
-        <div className="rounded-lg border p-4 bg-white">
-          <div className="font-medium mb-2">Resultado del Análisis</div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-            <div>
-              <div className="text-sm text-slate-500">Probabilidad IA</div>
-              <div className="text-2xl font-semibold">
-                {result.aiProbability}%
-              </div>
-            </div>
-            <div>
-              <div className="text-sm text-slate-500">Probabilidad Humano</div>
-              <div className="text-2xl font-semibold">
-                {result.humanProbability}%
-              </div>
-            </div>
-          </div>
-          <div className="mb-4">
-            <div className="text-sm text-slate-500">Video analizado</div>
-            <p className="font-medium">{result.fileName}</p>
-            <p className="text-sm text-slate-600">
-              Tamaño: {(result.fileSize / (1024 * 1024)).toFixed(1)} MB
-            </p>
-            <p className="text-sm text-slate-600">
-              Frames estimados: {result.estimatedFrames}
+        {/* File Upload Section */}
+        <div className="bg-white rounded-xl shadow-sm border p-8 mb-8">
+          <div className="mb-6">
+            <label htmlFor="video-input" className="block text-sm font-medium text-slate-700 mb-2">
+              Seleccionar Video
+            </label>
+            <input
+              id="video-input"
+              type="file"
+              accept="video/*"
+              onChange={(e) => setFile(e.target.files?.[0] || null)}
+              className="block w-full text-sm text-slate-500 file:mr-4 file:py-3 file:px-6 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-red-50 file:text-red-700 hover:file:bg-red-100 transition-colors"
+            />
+            <p className="mt-2 text-sm text-slate-500">
+              Formatos soportados: MP4, AVI, MOV, WebM (máximo 100MB)
             </p>
           </div>
-          <div className="mb-4">
-            <div className="text-sm text-slate-500">Justificación</div>
-            <p>{result.justification}</p>
-          </div>
-          <div>
-            <div className="text-sm text-slate-500">Proceso de análisis</div>
-            <ol className="list-decimal ml-5 space-y-1">
-              {result.steps?.map((s: string, i: number) => (
-                <li key={i}>{s}</li>
-              ))}
-            </ol>
-          </div>
+
+          {file && (
+            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+                  <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="font-medium text-slate-900">{file.name}</p>
+                  <p className="text-sm text-slate-600">
+                    {(file.size / (1024 * 1024)).toFixed(1)} MB • {file.type || "Tipo desconocido"}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {file && (
+            <button
+              onClick={analyze}
+              disabled={loading}
+              className="w-full sm:w-auto px-8 py-3 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-lg"
+            >
+              {loading ? (
+                <div className="flex items-center justify-center">
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                  Analizando video...
+                </div>
+              ) : (
+                "Analizar Video"
+              )}
+            </button>
+          )}
         </div>
-      )}
+
+        {/* Results Section */}
+        {result && (
+          <div className="bg-white rounded-xl shadow-sm border p-8">
+            {result.error ? (
+              <div className="text-center py-8">
+                <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-semibold text-red-900 mb-2">Error en el análisis</h3>
+                <p className="text-red-700">{result.error}</p>
+              </div>
+            ) : (
+              <>
+                <div className="text-center mb-8">
+                  <h2 className="text-2xl font-bold text-slate-900 mb-2">Resultado del Análisis</h2>
+                  <p className="text-slate-600">Análisis de video completado con éxito</p>
+                </div>
+
+                {/* Video Info */}
+                <div className="mb-8 p-4 bg-slate-50 rounded-lg">
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
+                      <svg className="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                      </svg>
+                    </div>
+                    <h3 className="font-semibold text-slate-900">Video Analizado</h3>
+                  </div>
+                  <p className="font-medium text-slate-900">{result.fileName}</p>
+                  <p className="text-sm text-slate-600">
+                    Tamaño: {result.fileSizeMB} MB • Frames estimados: {result.estimatedFrames}
+                  </p>
+                </div>
+
+                {/* Probability Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="text-lg font-semibold text-red-900">Probabilidad IA</h3>
+                      <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                        <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
+                      </div>
+                    </div>
+                    <div className="text-3xl font-bold text-red-600 mb-2">
+                      {result.aiProbability}%
+                    </div>
+                    <div className="w-full bg-red-200 rounded-full h-2">
+                      <div 
+                        className="bg-red-600 h-2 rounded-full transition-all duration-1000"
+                        style={{ width: `${result.aiProbability}%` }}
+                      ></div>
+                    </div>
+                  </div>
+
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-6">
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="text-lg font-semibold text-green-900">Probabilidad Humano</h3>
+                      <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                        <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                      </div>
+                    </div>
+                    <div className="text-3xl font-bold text-green-600 mb-2">
+                      {result.humanProbability}%
+                    </div>
+                    <div className="w-full bg-green-200 rounded-full h-2">
+                      <div 
+                        className="bg-green-600 h-2 rounded-full transition-all duration-1000"
+                        style={{ width: `${result.humanProbability}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Final Determination */}
+                {result.finalDetermination && (
+                  <div className="mb-8">
+                    <div className="text-center">
+                      <div className={`inline-flex items-center gap-3 px-6 py-4 rounded-xl font-semibold text-lg ${
+                        result.finalDetermination === "IA" 
+                          ? "bg-red-100 text-red-800 border-2 border-red-200" 
+                          : "bg-green-100 text-green-800 border-2 border-green-200"
+                      }`}>
+                        <div className={`w-4 h-4 rounded-full ${
+                          result.finalDetermination === "IA" ? "bg-red-500" : "bg-green-500"
+                        }`}></div>
+                        <span>Determinación Final: {result.finalDetermination}</span>
+                      </div>
+                      {result.confidenceLevel && (
+                        <div className="mt-3">
+                          <span className="text-sm font-medium text-slate-700">
+                            Nivel de confianza: 
+                          </span>
+                          <span className={`ml-2 px-3 py-1 rounded-full text-sm font-medium ${
+                            result.confidenceLevel === "Alta"
+                              ? "bg-green-100 text-green-800"
+                              : result.confidenceLevel === "Media"
+                              ? "bg-yellow-100 text-yellow-800"
+                              : "bg-red-100 text-red-800"
+                          }`}>
+                            {result.confidenceLevel}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Interpretation */}
+                {result.interpretation && (
+                  <div className="mb-8">
+                    <h3 className="text-lg font-semibold text-slate-900 mb-3">
+                      Interpretación del Resultado
+                    </h3>
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                      <p className="text-slate-700 leading-relaxed">
+                        {result.interpretation}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Analysis Factors */}
+                {result.analysisFactors && result.analysisFactors.length > 0 && (
+                  <div className="mb-8">
+                    <h3 className="text-lg font-semibold text-slate-900 mb-3">
+                      Factores de Análisis de Video
+                    </h3>
+                    <div className="space-y-4">
+                      {result.analysisFactors.map((factor, i) => (
+                        <div key={i} className="bg-white border border-slate-200 rounded-lg p-4">
+                          <div className="flex items-center justify-between mb-2">
+                            <h4 className="font-medium text-slate-900">{factor.factor}</h4>
+                            <div className="flex items-center gap-2">
+                              <div className="w-20 bg-slate-200 rounded-full h-2">
+                                <div 
+                                  className={`h-2 rounded-full ${
+                                    factor.score > 0.6 ? 'bg-red-500' : 
+                                    factor.score < 0.4 ? 'bg-green-500' : 'bg-yellow-500'
+                                  }`}
+                                  style={{ width: `${factor.score * 100}%` }}
+                                ></div>
+                              </div>
+                              <span className="text-sm font-medium text-slate-600">
+                                {(factor.score * 100).toFixed(0)}%
+                              </span>
+                            </div>
+                          </div>
+                          <p className="text-slate-700 text-sm leading-relaxed">
+                            {factor.explanation}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Key Indicators */}
+                {result.keyIndicators && result.keyIndicators.length > 0 && (
+                  <div className="mb-8">
+                    <h3 className="text-lg font-semibold text-slate-900 mb-3">
+                      Indicadores de Video Clave
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                      {result.keyIndicators.map((indicator: string, i: number) => (
+                        <div
+                          key={i}
+                          className="flex items-center gap-2 bg-red-50 rounded-lg p-3"
+                        >
+                          <div className="w-2 h-2 bg-red-600 rounded-full"></div>
+                          <span className="text-slate-700 text-sm">
+                            {indicator}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Strengths and Weaknesses */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                  {result.strengths && result.strengths.length > 0 && (
+                    <div>
+                      <h3 className="text-lg font-semibold text-slate-900 mb-3">
+                        Fortalezas del Análisis
+                      </h3>
+                      <div className="space-y-2">
+                        {result.strengths.map((strength: string, i: number) => (
+                          <div key={i} className="flex items-start gap-2 bg-green-50 rounded-lg p-3">
+                            <div className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
+                            <span className="text-slate-700 text-sm">{strength}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {result.weaknesses && result.weaknesses.length > 0 && (
+                    <div>
+                      <h3 className="text-lg font-semibold text-slate-900 mb-3">
+                        Limitaciones Identificadas
+                      </h3>
+                      <div className="space-y-2">
+                        {result.weaknesses.map((weakness: string, i: number) => (
+                          <div key={i} className="flex items-start gap-2 bg-yellow-50 rounded-lg p-3">
+                            <div className="w-2 h-2 bg-yellow-500 rounded-full mt-2 flex-shrink-0"></div>
+                            <span className="text-slate-700 text-sm">{weakness}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Recommendations */}
+                {result.recommendations && (
+                  <div className="mb-8">
+                    <h3 className="text-lg font-semibold text-slate-900 mb-3">
+                      Recomendaciones
+                    </h3>
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                      <p className="text-slate-700 leading-relaxed">
+                        {result.recommendations}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Technical Details */}
+                {result.technicalDetails && (
+                  <div className="mb-8">
+                    <h3 className="text-lg font-semibold text-slate-900 mb-3">
+                      Detalles Técnicos
+                    </h3>
+                    <div className="bg-slate-50 rounded-lg p-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                        <div>
+                          <span className="font-medium text-slate-900">Análisis Heurístico:</span>
+                          <span className="text-slate-700 ml-2">{result.technicalDetails.heuristicScore}%</span>
+                        </div>
+                        <div>
+                          <span className="font-medium text-slate-900">Gemini:</span>
+                          <span className="text-slate-700 ml-2">{result.technicalDetails.geminiScore}%</span>
+                        </div>
+                        <div>
+                          <span className="font-medium text-slate-900">Puntuación Combinada:</span>
+                          <span className="text-slate-700 ml-2">{result.technicalDetails.combinedScore}%</span>
+                        </div>
+                        <div>
+                          <span className="font-medium text-slate-900">Metodología:</span>
+                          <span className="text-slate-700 ml-2">{result.technicalDetails.methodology}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
