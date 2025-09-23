@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { saveResult } from "../lib/store";
-import { AnalysisResult } from "../types";
+import type { AnalysisResult } from "../types";
 
 export function TextPage() {
   const [text, setText] = useState("");

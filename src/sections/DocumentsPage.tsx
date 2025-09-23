@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { saveResult } from "../lib/store";
-import { AnalysisResult } from "../types";
+import type { AnalysisResult } from "../types";
 
 export function DocumentsPage() {
   const [file, setFile] = useState<File | null>(null);
