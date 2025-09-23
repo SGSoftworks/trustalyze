@@ -43,11 +43,13 @@ npm run dev
 ## Configuración de Firebase
 
 1. **Crear proyecto en Firebase Console:**
+
    - Ve a https://console.firebase.google.com/
    - Crea un nuevo proyecto
    - Habilita Firestore Database
 
 2. **Configurar Firestore:**
+
    - En Firebase Console > Firestore Database > Rules
    - Copia y pega el contenido de `firestore.rules`
    - Publica las reglas
@@ -62,7 +64,7 @@ npm run dev
 1. Conecta el repo con Vercel.
 2. En Project Settings > Environment Variables agrega:
    - HF_API_KEY, GEMINI_API_KEY, GEMINI_API_ENDPOINT, GOOGLE_SEARCH_API_KEY, GOOGLE_SEARCH_CX
-   - VITE_FIREBASE_* (todas las variables de Firebase)
+   - VITE*FIREBASE*\* (todas las variables de Firebase)
 3. Build & Output:
    - Build Command: `npm run vercel-build`
    - Output Directory: `dist`

@@ -1,14 +1,13 @@
 import { Outlet, NavLink } from "react-router-dom";
 import { ConsentBanner } from "./ConsentBanner";
+import { Logo } from "../components/Logo";
 
 export function Layout() {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
       <header className="border-b bg-white/70 backdrop-blur supports-[backdrop-filter]:bg-white/60 sticky top-0 z-10">
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-          <NavLink to="/" className="font-semibold tracking-tight text-xl">
-            Trustalyze
-          </NavLink>
+          <Logo size="md" showText={true} />
           <nav className="flex gap-4 text-sm">
             <NavLink
               to="/texto"
