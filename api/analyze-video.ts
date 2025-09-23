@@ -19,28 +19,28 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const buffer = Buffer.from(videoBuffer, "base64");
     const fileSize = buffer.length;
     const fileSizeMB = fileSize / (1024 * 1024);
-    
+
     // Heurísticas básicas
     let heuristicScore = 0.5;
-    
+
     // Factor de tamaño de archivo
     if (fileSizeMB > 100) {
       heuristicScore += 0.15; // Videos muy grandes pueden ser generados
     } else if (fileSizeMB < 1) {
       heuristicScore += 0.1; // Videos muy pequeños pueden ser comprimidos artificialmente
     }
-    
+
     // Factor de duración estimada
     const estimatedFrames = Math.floor(fileSizeMB * 10); // Aproximación muy básica
     const frameAnalysisScore = Math.min(0.2, estimatedFrames / 1000);
     heuristicScore += frameAnalysisScore;
-    
+
     // Normalizar
     heuristicScore = Math.min(0.8, Math.max(0.2, heuristicScore));
 
     // 2. Análisis con Gemini - Evaluación contextual y de contenido
     let geminiData: any = null;
-    
+
     try {
       const geminiPrompt = `Eres un experto en detección de videos generados por IA (deepfakes, contenido sintético). Analiza este video y determina si fue generado por inteligencia artificial o es contenido humano real.
 
@@ -93,8 +93,8 @@ Responde en formato JSON:
           contents: [{ parts: [{ text: geminiPrompt }] }],
           generationConfig: {
             temperature: 0.1,
-            maxOutputTokens: 800
-          }
+            maxOutputTokens: 800,
+          },
         },
         {
           headers: {
@@ -105,7 +105,8 @@ Responde en formato JSON:
         }
       );
 
-      const geminiText = geminiResp.data?.candidates?.[0]?.content?.parts?.[0]?.text;
+      const geminiText =
+        geminiResp.data?.candidates?.[0]?.content?.parts?.[0]?.text;
       if (geminiText) {
         try {
           geminiData = JSON.parse(geminiText);
@@ -120,7 +121,8 @@ Responde en formato JSON:
             key_indicators: ["Análisis limitado"],
             strengths: [],
             weaknesses: ["Respuesta de IA no estructurada"],
-            recommendations: "Intente con un video de mayor calidad o diferente formato"
+            recommendations:
+              "Intente con un video de mayor calidad o diferente formato",
           };
         }
       }
@@ -130,14 +132,18 @@ Responde en formato JSON:
 
     // 3. Combinar resultados con pesos
     const geminiScore = geminiData?.ai_probability || 0.5;
-    const finalScore = (heuristicScore * 0.4) + (geminiScore * 0.6); // Más peso a Gemini para análisis contextual
+    const finalScore = heuristicScore * 0.4 + geminiScore * 0.6; // Más peso a Gemini para análisis contextual
     const aiProbability = Number((finalScore * 100).toFixed(2));
     const humanProbability = Number(((1 - finalScore) * 100).toFixed(2));
 
     // Determinar resultado final
     const finalDetermination = finalScore > 0.6 ? "IA" : "Humano";
-    const confidenceLevel = finalScore > 0.8 || finalScore < 0.2 ? "Alta" : 
-                           finalScore > 0.7 || finalScore < 0.3 ? "Media" : "Baja";
+    const confidenceLevel =
+      finalScore > 0.8 || finalScore < 0.2
+        ? "Alta"
+        : finalScore > 0.7 || finalScore < 0.3
+        ? "Media"
+        : "Baja";
 
     const result = {
       fileName,
@@ -148,30 +154,52 @@ Responde en formato JSON:
       humanProbability,
       finalDetermination,
       confidenceLevel,
-      methodology: geminiData?.methodology || "Análisis combinado con heurísticas y modelos especializados en detección de videos",
-      interpretation: geminiData?.interpretation || `El video muestra características ${finalDetermination === "IA" ? "típicas de generación automática" : "consistentes con grabación humana"}`,
+      methodology:
+        geminiData?.methodology ||
+        "Análisis combinado con heurísticas y modelos especializados en detección de videos",
+      interpretation:
+        geminiData?.interpretation ||
+        `El video muestra características ${
+          finalDetermination === "IA"
+            ? "típicas de generación automática"
+            : "consistentes con grabación humana"
+        }`,
       analysisFactors: geminiData?.analysis_factors || [
         {
           factor: "Análisis Heurístico",
           score: heuristicScore,
-          explanation: `Análisis de metadatos y características del archivo: ${(heuristicScore * 100).toFixed(1)}% probabilidad de generación por IA`
+          explanation: `Análisis de metadatos y características del archivo: ${(
+            heuristicScore * 100
+          ).toFixed(1)}% probabilidad de generación por IA`,
         },
         {
           factor: "Análisis Contextual",
           score: geminiScore,
-          explanation: `Evaluación contextual de Gemini: ${(geminiScore * 100).toFixed(1)}% probabilidad de generación automática`
-        }
+          explanation: `Evaluación contextual de Gemini: ${(
+            geminiScore * 100
+          ).toFixed(1)}% probabilidad de generación automática`,
+        },
       ],
-      keyIndicators: geminiData?.key_indicators || ["Análisis de metadatos", "Evaluación de calidad", "Detección de artefactos"],
-      strengths: geminiData?.strengths || [`Análisis realizado con ${confidenceLevel.toLowerCase()} confianza`],
-      weaknesses: geminiData?.weaknesses || ["Limitaciones en el análisis debido a la falta de acceso directo al contenido del video"],
-      recommendations: geminiData?.recommendations || "Para mayor precisión, analice videos de mayor calidad y resolución",
+      keyIndicators: geminiData?.key_indicators || [
+        "Análisis de metadatos",
+        "Evaluación de calidad",
+        "Detección de artefactos",
+      ],
+      strengths: geminiData?.strengths || [
+        `Análisis realizado con ${confidenceLevel.toLowerCase()} confianza`,
+      ],
+      weaknesses: geminiData?.weaknesses || [
+        "Limitaciones en el análisis debido a la falta de acceso directo al contenido del video",
+      ],
+      recommendations:
+        geminiData?.recommendations ||
+        "Para mayor precisión, analice videos de mayor calidad y resolución",
       technicalDetails: {
         heuristicScore: Number((heuristicScore * 100).toFixed(1)),
         geminiScore: Number((geminiScore * 100).toFixed(1)),
         combinedScore: Number((finalScore * 100).toFixed(1)),
-        methodology: "40% Heurísticas + 60% Gemini para análisis de video"
-      }
+        methodology: "40% Heurísticas + 60% Gemini para análisis de video",
+      },
     };
 
     return res.status(200).json(result);

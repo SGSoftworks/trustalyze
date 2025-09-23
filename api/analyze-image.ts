@@ -14,26 +14,28 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // 1. Análisis con Hugging Face - Detección de imágenes generadas por IA
     let hfScore = 0.5;
     let hfAnalysis = "Análisis de Hugging Face no disponible";
-    
+
     try {
       const hfResp = await axios.post(
         "https://api-inference.huggingface.co/models/umm-maybe/ai-image-detector",
         { inputs: imageBase64 },
-        { 
+        {
           headers: { Authorization: `Bearer ${process.env.HF_API_KEY}` },
-          timeout: 15000
+          timeout: 15000,
         }
       );
-      
+
       hfScore = hfResp.data?.score ?? 0.5;
-      hfAnalysis = `Modelo especializado detectó ${(hfScore * 100).toFixed(1)}% probabilidad de generación por IA`;
+      hfAnalysis = `Modelo especializado detectó ${(hfScore * 100).toFixed(
+        1
+      )}% probabilidad de generación por IA`;
     } catch (hfError) {
       console.warn("HF API error:", hfError);
     }
 
     // 2. Análisis con Gemini - Evaluación visual y contextual
     let geminiData: any = null;
-    
+
     try {
       const geminiPrompt = `Eres un experto en detección de imágenes generadas por IA. Analiza esta imagen y determina si fue generada por inteligencia artificial o es una fotografía/ilustración humana.
 
@@ -80,8 +82,8 @@ Responde en formato JSON:
           contents: [{ parts: [{ text: geminiPrompt }] }],
           generationConfig: {
             temperature: 0.1,
-            maxOutputTokens: 800
-          }
+            maxOutputTokens: 800,
+          },
         },
         {
           headers: {
@@ -92,7 +94,8 @@ Responde en formato JSON:
         }
       );
 
-      const geminiText = geminiResp.data?.candidates?.[0]?.content?.parts?.[0]?.text;
+      const geminiText =
+        geminiResp.data?.candidates?.[0]?.content?.parts?.[0]?.text;
       if (geminiText) {
         try {
           geminiData = JSON.parse(geminiText);
@@ -107,7 +110,8 @@ Responde en formato JSON:
             key_indicators: ["Análisis limitado"],
             strengths: [],
             weaknesses: ["Respuesta de IA no estructurada"],
-            recommendations: "Intente con una imagen de mayor resolución o diferente formato"
+            recommendations:
+              "Intente con una imagen de mayor resolución o diferente formato",
           };
         }
       }
@@ -117,44 +121,70 @@ Responde en formato JSON:
 
     // 3. Combinar resultados con pesos
     const geminiScore = geminiData?.ai_probability || 0.5;
-    const finalScore = (hfScore * 0.7) + (geminiScore * 0.3); // Más peso a HF para imágenes
+    const finalScore = hfScore * 0.7 + geminiScore * 0.3; // Más peso a HF para imágenes
     const aiProbability = Number((finalScore * 100).toFixed(2));
     const humanProbability = Number(((1 - finalScore) * 100).toFixed(2));
 
     // Determinar resultado final
     const finalDetermination = finalScore > 0.6 ? "IA" : "Humano";
-    const confidenceLevel = finalScore > 0.8 || finalScore < 0.2 ? "Alta" : 
-                           finalScore > 0.7 || finalScore < 0.3 ? "Media" : "Baja";
+    const confidenceLevel =
+      finalScore > 0.8 || finalScore < 0.2
+        ? "Alta"
+        : finalScore > 0.7 || finalScore < 0.3
+        ? "Media"
+        : "Baja";
 
     const result = {
       aiProbability,
       humanProbability,
       finalDetermination,
       confidenceLevel,
-      methodology: geminiData?.methodology || "Análisis combinado con modelos especializados en detección de imágenes",
-      interpretation: geminiData?.interpretation || `La imagen muestra características ${finalDetermination === "IA" ? "típicas de generación automática" : "consistentes con creación humana"}`,
+      methodology:
+        geminiData?.methodology ||
+        "Análisis combinado con modelos especializados en detección de imágenes",
+      interpretation:
+        geminiData?.interpretation ||
+        `La imagen muestra características ${
+          finalDetermination === "IA"
+            ? "típicas de generación automática"
+            : "consistentes con creación humana"
+        }`,
       analysisFactors: geminiData?.analysis_factors || [
         {
           factor: "Análisis de Patrones",
           score: hfScore,
-          explanation: `Modelo Hugging Face detectó patrones ${hfScore > 0.5 ? "de generación por IA" : "de creación humana"} con ${(hfScore * 100).toFixed(1)}% de confianza`
+          explanation: `Modelo Hugging Face detectó patrones ${
+            hfScore > 0.5 ? "de generación por IA" : "de creación humana"
+          } con ${(hfScore * 100).toFixed(1)}% de confianza`,
         },
         {
           factor: "Análisis Visual Contextual",
           score: geminiScore,
-          explanation: `Evaluación visual de Gemini: ${(geminiScore * 100).toFixed(1)}% probabilidad de generación automática`
-        }
+          explanation: `Evaluación visual de Gemini: ${(
+            geminiScore * 100
+          ).toFixed(1)}% probabilidad de generación automática`,
+        },
       ],
-      keyIndicators: geminiData?.key_indicators || ["Análisis de patrones visuales", "Evaluación de texturas", "Detección de artefactos"],
-      strengths: geminiData?.strengths || [`Análisis realizado con ${confidenceLevel.toLowerCase()} confianza`],
-      weaknesses: geminiData?.weaknesses || ["Limitaciones en el análisis debido a la resolución de la imagen"],
-      recommendations: geminiData?.recommendations || "Para mayor precisión, analice imágenes de mayor resolución y calidad",
+      keyIndicators: geminiData?.key_indicators || [
+        "Análisis de patrones visuales",
+        "Evaluación de texturas",
+        "Detección de artefactos",
+      ],
+      strengths: geminiData?.strengths || [
+        `Análisis realizado con ${confidenceLevel.toLowerCase()} confianza`,
+      ],
+      weaknesses: geminiData?.weaknesses || [
+        "Limitaciones en el análisis debido a la resolución de la imagen",
+      ],
+      recommendations:
+        geminiData?.recommendations ||
+        "Para mayor precisión, analice imágenes de mayor resolución y calidad",
       technicalDetails: {
         hfScore: Number((hfScore * 100).toFixed(1)),
         geminiScore: Number((geminiScore * 100).toFixed(1)),
         combinedScore: Number((finalScore * 100).toFixed(1)),
-        methodology: "70% Hugging Face + 30% Gemini para análisis visual"
-      }
+        methodology: "70% Hugging Face + 30% Gemini para análisis visual",
+      },
     };
 
     return res.status(200).json(result);
