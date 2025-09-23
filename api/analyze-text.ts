@@ -19,14 +19,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const hfResp = await axios.post(
         "https://api-inference.huggingface.co/models/roberta-base-openai-detector",
         { inputs: text.slice(0, 5000) }, // Limitar para evitar límites de API
-        { 
+        {
           headers: { Authorization: `Bearer ${process.env.HF_API_KEY}` },
-          timeout: 10000
+          timeout: 10000,
         }
       );
-      
+
       const labels = hfResp.data?.[0] || [];
-      const fakeLabel = labels.find((l: any) => l.label === "FAKE" || l.label === "LABEL_1");
+      const fakeLabel = labels.find(
+        (l: any) => l.label === "FAKE" || l.label === "LABEL_1"
+      );
       hfScore = fakeLabel?.score ?? 0.5;
     } catch (hfError) {
       console.warn("HF API error:", hfError);
@@ -35,7 +37,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // 2. Análisis con Gemini - Evaluación semántica y contextual
     let geminiScore = 0.5;
     let geminiExplanation = "Análisis semántico no disponible";
-    
+
     try {
       const geminiPrompt = `Analiza este texto y determina la probabilidad de que haya sido generado por IA vs escrito por un humano. Considera:
       - Estructura y coherencia
@@ -53,24 +55,26 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }`;
 
       const geminiResp = await axios.post(
-        process.env.GEMINI_API_ENDPOINT || "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent",
+        process.env.GEMINI_API_ENDPOINT ||
+          "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent",
         {
           contents: [{ parts: [{ text: geminiPrompt }] }],
           generationConfig: {
             temperature: 0.1,
-            maxOutputTokens: 500
-          }
+            maxOutputTokens: 500,
+          },
         },
         {
-          headers: { 
+          headers: {
             "Content-Type": "application/json",
-            "x-goog-api-key": process.env.GEMINI_API_KEY
+            "x-goog-api-key": process.env.GEMINI_API_KEY,
           },
-          timeout: 15000
+          timeout: 15000,
         }
       );
 
-      const geminiText = geminiResp.data?.candidates?.[0]?.content?.parts?.[0]?.text;
+      const geminiText =
+        geminiResp.data?.candidates?.[0]?.content?.parts?.[0]?.text;
       if (geminiText) {
         try {
           const geminiData = JSON.parse(geminiText);
@@ -86,7 +90,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     // 3. Combinar resultados con pesos
-    const finalScore = (hfScore * 0.6) + (geminiScore * 0.4);
+    const finalScore = hfScore * 0.6 + geminiScore * 0.4;
     const aiProbability = Number((finalScore * 100).toFixed(2));
     const humanProbability = Number(((1 - finalScore) * 100).toFixed(2));
 
@@ -99,10 +103,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         "Análisis con modelo Hugging Face (roberta-base-openai-detector)",
         "Evaluación semántica con Gemini 2.0 Flash",
         "Combinación de resultados con pesos optimizados",
-        "Cálculo de probabilidades finales"
+        "Cálculo de probabilidades finales",
       ],
-      justification: `Análisis combinado: ${geminiExplanation}. El modelo Hugging Face detectó patrones de contenido generado por IA con ${(hfScore * 100).toFixed(1)}% de confianza, mientras que Gemini evaluó la coherencia semántica con ${(geminiScore * 100).toFixed(1)}% de probabilidad de generación automática.`,
-      confidence: finalScore > 0.7 || finalScore < 0.3 ? "Alta" : "Media"
+      justification: `Análisis combinado: ${geminiExplanation}. El modelo Hugging Face detectó patrones de contenido generado por IA con ${(
+        hfScore * 100
+      ).toFixed(
+        1
+      )}% de confianza, mientras que Gemini evaluó la coherencia semántica con ${(
+        geminiScore * 100
+      ).toFixed(1)}% de probabilidad de generación automática.`,
+      confidence: finalScore > 0.7 || finalScore < 0.3 ? "Alta" : "Media",
     };
 
     return res.status(200).json(result);

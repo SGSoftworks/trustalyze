@@ -82,12 +82,22 @@ export function Layout() {
               Acerca de
             </NavLink>
           </nav>
-          
+
           {/* Mobile menu button */}
           <div className="md:hidden">
             <button className="text-slate-600 hover:text-slate-900">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
               </svg>
             </button>
           </div>
@@ -108,36 +118,71 @@ export function Layout() {
                 Sistema de detección de contenido generado por IA
               </p>
             </div>
-            
+
             <div>
               <h3 className="font-semibold text-slate-900 mb-3">Análisis</h3>
               <ul className="space-y-2 text-slate-600">
-                <li><NavLink to="/texto" className="hover:text-blue-600">Texto</NavLink></li>
-                <li><NavLink to="/documentos" className="hover:text-blue-600">Documentos</NavLink></li>
-                <li><NavLink to="/imagenes" className="hover:text-blue-600">Imágenes</NavLink></li>
-                <li><NavLink to="/videos" className="hover:text-blue-600">Videos</NavLink></li>
+                <li>
+                  <NavLink to="/texto" className="hover:text-blue-600">
+                    Texto
+                  </NavLink>
+                </li>
+                <li>
+                  <NavLink to="/documentos" className="hover:text-blue-600">
+                    Documentos
+                  </NavLink>
+                </li>
+                <li>
+                  <NavLink to="/imagenes" className="hover:text-blue-600">
+                    Imágenes
+                  </NavLink>
+                </li>
+                <li>
+                  <NavLink to="/videos" className="hover:text-blue-600">
+                    Videos
+                  </NavLink>
+                </li>
               </ul>
             </div>
-            
+
             <div>
               <h3 className="font-semibold text-slate-900 mb-3">Información</h3>
               <ul className="space-y-2 text-slate-600">
-                <li><NavLink to="/acerca" className="hover:text-blue-600">Acerca de</NavLink></li>
-                <li><NavLink to="/casos" className="hover:text-blue-600">Casos</NavLink></li>
-                <li><NavLink to="/dashboard" className="hover:text-blue-600">Dashboard</NavLink></li>
+                <li>
+                  <NavLink to="/acerca" className="hover:text-blue-600">
+                    Acerca de
+                  </NavLink>
+                </li>
+                <li>
+                  <NavLink to="/casos" className="hover:text-blue-600">
+                    Casos
+                  </NavLink>
+                </li>
+                <li>
+                  <NavLink to="/dashboard" className="hover:text-blue-600">
+                    Dashboard
+                  </NavLink>
+                </li>
               </ul>
             </div>
-            
+
             <div>
               <h3 className="font-semibold text-slate-900 mb-3">Legal</h3>
               <ul className="space-y-2 text-slate-600">
-                <li><NavLink to="/privacidad" className="hover:text-blue-600">Privacidad</NavLink></li>
+                <li>
+                  <NavLink to="/privacidad" className="hover:text-blue-600">
+                    Privacidad
+                  </NavLink>
+                </li>
               </ul>
             </div>
           </div>
-          
+
           <div className="border-t mt-8 pt-6 text-center">
-            <p>© {new Date().getFullYear()} Trustalyze - UNINPAHU. Todos los derechos reservados.</p>
+            <p>
+              © {new Date().getFullYear()} Trustalyze - UNINPAHU. Todos los
+              derechos reservados.
+            </p>
           </div>
         </div>
       </footer>
