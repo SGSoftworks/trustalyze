@@ -25,7 +25,9 @@ export class APIService {
 
       if (!response.ok) {
         // Si falla la API principal, intentar con el fallback
-        console.warn(`Primary API failed with status ${response.status}, trying fallback...`);
+        console.warn(
+          `Primary API failed with status ${response.status}, trying fallback...`
+        );
         return await this.analyzeTextFallback(text);
       }
 

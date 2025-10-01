@@ -70,7 +70,9 @@ export class FirebaseService {
         createdAt: doc.data().createdAt.toMillis(),
       })) as AnalysisResult[];
 
-      console.log(`Successfully fetched ${results.length} analyses from Firebase`);
+      console.log(
+        `Successfully fetched ${results.length} analyses from Firebase`
+      );
       return results;
     } catch (error) {
       console.error("Error getting analyses:", error);
