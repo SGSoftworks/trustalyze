@@ -15,23 +15,37 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(405).json({ error: "Method not allowed" });
 
   try {
-    // Obtener archivo del FormData
-    const formData = req.body;
-    if (!formData || !formData.file) {
+    // Obtener archivo del FormData o JSON
+    let file: any;
+    let fileName: string;
+    let fileType: string;
+    let fileSize: number;
+
+    if (req.body && req.body.file) {
+      // FormData
+      file = req.body.file;
+      fileName = file.name || "documento";
+      fileType = file.type || "application/octet-stream";
+      fileSize = file.size || 0;
+    } else if (req.body && req.body.fileName) {
+      // JSON con metadatos
+      fileName = req.body.fileName || "documento";
+      fileType = req.body.fileType || "application/octet-stream";
+      fileSize = req.body.fileSize || 0;
+    } else {
       return res.status(400).json({ error: "No file provided" });
     }
 
-    const file = formData.file;
-    const fileName = file.name || "documento";
-    const fileType = file.type || "application/octet-stream";
-
     // Análisis básico de metadatos de archivo (sin parsing por ahora)
-    const fileSize = file.size || 0;
     const fileExtension = fileName.split(".").pop()?.toLowerCase() || "";
 
     // Análisis heurístico básico para documentos
     let aiScore = 0;
-    const factors = [];
+    const factors: Array<{
+      factor: string;
+      score: number;
+      explanation: string;
+    }> = [];
 
     // Factor 1: Tamaño de archivo
     if (fileSize > 2 * 1024 * 1024) {

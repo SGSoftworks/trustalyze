@@ -56,6 +56,7 @@ export class FirebaseService {
 
   async getAnalyses(limitCount: number = 50): Promise<AnalysisResult[]> {
     try {
+      console.log("Attempting to fetch analyses from Firebase...");
       const q = query(
         collection(db, "analyses"),
         orderBy("createdAt", "desc"),
@@ -63,11 +64,14 @@ export class FirebaseService {
       );
       const querySnapshot = await getDocs(q);
 
-      return querySnapshot.docs.map((doc) => ({
+      const results = querySnapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
         createdAt: doc.data().createdAt.toMillis(),
       })) as AnalysisResult[];
+
+      console.log(`Successfully fetched ${results.length} analyses from Firebase`);
+      return results;
     } catch (error) {
       console.error("Error getting analyses:", error);
       // En lugar de fallar, retornar array vacío

@@ -24,7 +24,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     console.error("GEMINI_API_KEY not found in environment variables");
     // Redirigir directamente al fallback
     console.warn("Gemini API key not configured, using fallback analysis");
-    
+
     // Análisis básico sin Gemini (para testing)
     const wordCount = text.split(/\s+/).length;
     const sentenceCount = text

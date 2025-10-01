@@ -15,15 +15,26 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(405).json({ error: "Method not allowed" });
 
   try {
-    // Obtener archivo del FormData
-    const formData = req.body;
-    if (!formData || !formData.file) {
+    // Obtener archivo del FormData o JSON
+    let file: any;
+    let fileName: string;
+    let fileType: string;
+    let fileSize: number;
+
+    if (req.body && req.body.file) {
+      // FormData
+      file = req.body.file;
+      fileName = file.name || "imagen";
+      fileType = file.type || "image/jpeg";
+      fileSize = file.size || 0;
+    } else if (req.body && req.body.fileName) {
+      // JSON con metadatos
+      fileName = req.body.fileName || "imagen";
+      fileType = req.body.fileType || "image/jpeg";
+      fileSize = req.body.fileSize || 0;
+    } else {
       return res.status(400).json({ error: "No image file provided" });
     }
-
-    const file = formData.file;
-    const fileName = file.name || "imagen";
-    const fileType = file.type || "image/jpeg";
 
     // Verificar que es una imagen
     if (!fileType.startsWith("image/")) {
@@ -31,7 +42,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     // Análisis básico de metadatos de imagen (simulado)
-    const fileSize = file.size || 0;
     const imageWidth = Math.floor(Math.random() * 2000) + 500; // Simular dimensiones
     const imageHeight = Math.floor(Math.random() * 2000) + 500;
     const hasText = Math.random() > 0.5; // Simular si tiene texto

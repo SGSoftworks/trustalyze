@@ -14,6 +14,7 @@ export class APIService {
 
   async analyzeText(text: string): Promise<AnalysisResult> {
     try {
+      console.log("Attempting to analyze text with primary API...");
       const response = await fetch(`${API_BASE_URL}/analyze-text`, {
         method: "POST",
         headers: {
@@ -24,11 +25,12 @@ export class APIService {
 
       if (!response.ok) {
         // Si falla la API principal, intentar con el fallback
-        console.warn("Primary API failed, trying fallback...");
+        console.warn(`Primary API failed with status ${response.status}, trying fallback...`);
         return await this.analyzeTextFallback(text);
       }
 
       const result = await response.json();
+      console.log("Primary API analysis successful");
       return {
         ...result,
         kind: "texto" as AnalysisKind,
