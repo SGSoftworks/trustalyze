@@ -1,57 +1,88 @@
-// Vercel Serverless Function - Análisis de Imágenes REAL con Gemini
+// Vercel Serverless Function - Análisis de Imágenes con Gemini
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import axios from "axios";
+import * as Tesseract from "tesseract.js";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== "POST")
     return res.status(405).json({ error: "Method not allowed" });
 
-  const { imageBase64 } = req.body as { imageBase64?: string };
-  if (!imageBase64)
-    return res.status(400).json({ error: "Missing imageBase64" });
-
   try {
-    // Análisis REAL con Gemini - Evaluación visual y contextual
-    const geminiPrompt = `Eres un experto en detección de imágenes generadas por IA. Analiza esta imagen de manera exhaustiva y determina si fue generada por inteligencia artificial o es una fotografía/ilustración humana.
+    // Obtener archivo del FormData
+    const formData = req.body;
+    if (!formData || !formData.file) {
+      return res.status(400).json({ error: "No image file provided" });
+    }
 
-IMAGEN A ANALIZAR:
-[Imagen proporcionada en base64]
+    const file = formData.file;
+    const fileName = file.name || "imagen";
+    const fileType = file.type || "image/jpeg";
 
-METODOLOGÍA DE ANÁLISIS PROFESIONAL VISUAL:
-1. **Análisis de Patrones**: Detecta patrones repetitivos, artefactos de generación y anomalías
-2. **Análisis de Texturas**: Evalúa la naturalidad de texturas, superficies y materiales
-3. **Análisis de Composición**: Verifica coherencia composicional, perspectiva y geometría
-4. **Análisis de Detalles**: Examina la precisión en detalles finos, bordes y transiciones
-5. **Análisis de Iluminación**: Evalúa la coherencia de la iluminación y sombras
-6. **Análisis de Anatomía**: Si hay personas, verifica proporciones, anatomía y fisiología
-7. **Análisis de Artefactos**: Identifica marcas típicas de generación por IA y errores
-8. **Análisis de Estilo**: Evalúa consistencia estilística y artística
-9. **Análisis de Resolución**: Detecta patrones de resolución y compresión artificial
-10. **Análisis de Contexto**: Evalúa coherencia contextual y realismo general
+    // Verificar que es una imagen
+    if (!fileType.startsWith("image/")) {
+      return res.status(400).json({ error: "File is not an image" });
+    }
+
+    // Convertir imagen a base64 para análisis
+    const imageBase64 = file.data;
+    const imageDataUrl = `data:${fileType};base64,${imageBase64}`;
+
+    // Extraer texto de la imagen usando OCR
+    let extractedText = "";
+    try {
+      const {
+        data: { text },
+      } = await Tesseract.recognize(imageDataUrl, "spa+eng", {
+        logger: (m) => console.log(m),
+      });
+      extractedText = text.trim();
+    } catch (ocrError) {
+      console.warn("OCR failed:", ocrError);
+      extractedText = "";
+    }
+
+    // Análisis con Gemini Vision
+    const geminiPrompt = `Eres un experto en detección de contenido generado por IA. Analiza esta imagen de manera exhaustiva y determina si fue generada por inteligencia artificial o creada por un humano.
+
+INFORMACIÓN DE LA IMAGEN:
+- Nombre: ${fileName}
+- Tipo: ${fileType}
+- Texto extraído (OCR): ${extractedText || "No se pudo extraer texto"}
+
+METODOLOGÍA DE ANÁLISIS PROFESIONAL:
+1. **Análisis Visual**: Evalúa composición, iluminación, perspectiva y elementos visuales
+2. **Análisis de Texto**: Examina el texto visible en la imagen (si existe)
+3. **Análisis de Patrones**: Identifica patrones típicos de generación por IA
+4. **Análisis de Coherencia**: Verifica coherencia entre elementos visuales y textuales
+5. **Análisis de Calidad**: Evalúa la calidad y naturalidad de la imagen
+6. **Análisis de Artefactos**: Detecta artefactos típicos de generación por IA
+7. **Análisis de Contexto**: Verifica relevancia y coherencia contextual
+8. **Análisis de Estilo**: Evalúa el estilo artístico y su consistencia
 
 INSTRUCCIONES CRÍTICAS:
 - Realiza un análisis PROFUNDO y TÉCNICO de la imagen
 - Proporciona una determinación CLARA y DEFINITIVA (IA o Humano)
 - Calcula porcentajes REALES basados en evidencia visual concreta
 - Justifica cada factor con observaciones específicas de la imagen
-- Usa un rango de probabilidad REALISTA basado en el análisis visual
-- Sé ESPECÍFICO en tus observaciones técnicas
+- Usa un rango de probabilidad REALISTA basado en el análisis
+- Sé ESPECÍFICO en tus observaciones visuales
+- Considera tanto elementos visuales como textuales
 
 Responde ÚNICAMENTE en formato JSON válido:
 {
   "ai_probability": 0.0-1.0,
   "final_determination": "IA" o "Humano",
   "confidence_level": "Alta", "Media" o "Baja",
-  "methodology": "Descripción detallada de la metodología de análisis visual aplicada",
+  "methodology": "Descripción detallada de la metodología aplicada",
   "interpretation": "Interpretación clara del resultado en términos prácticos",
   "analysis_factors": [
     {
-      "factor": "nombre específico del factor visual analizado",
+      "factor": "nombre específico del factor analizado",
       "score": 0.0-1.0,
       "explanation": "explicación detallada con observaciones específicas de la imagen"
     }
   ],
-  "key_indicators": ["indicador visual específico 1", "indicador visual específico 2", "indicador visual específico 3"],
+  "key_indicators": ["indicador específico 1", "indicador específico 2", "indicador específico 3"],
   "strengths": ["fortaleza específica que apoya la determinación"],
   "weaknesses": ["limitación específica identificada"],
   "recommendations": "Recomendación específica para verificación adicional"
@@ -67,7 +98,7 @@ Responde ÚNICAMENTE en formato JSON válido:
               { text: geminiPrompt },
               {
                 inline_data: {
-                  mime_type: "image/jpeg",
+                  mime_type: fileType,
                   data: imageBase64,
                 },
               },
@@ -112,14 +143,21 @@ Responde ÚNICAMENTE en formato JSON válido:
     const aiProbability = Math.round(geminiData.ai_probability * 100);
     const humanProbability = Math.round((1 - geminiData.ai_probability) * 100);
 
+    // Análisis básico del texto extraído
+    const wordCount = extractedText
+      .split(/\s+/)
+      .filter((word) => word.length > 0).length;
+    const hasText = extractedText.length > 0;
+
     const result = {
+      inputLength: extractedText.length,
       aiProbability,
       humanProbability,
       finalDetermination: geminiData.final_determination,
       confidenceLevel: geminiData.confidence_level,
       methodology:
         geminiData.methodology ||
-        "Análisis exhaustivo con modelo Gemini especializado en imágenes",
+        "Análisis exhaustivo de imagen con modelo Gemini 2.0 Flash especializado en detección de contenido generado por IA",
       interpretation:
         geminiData.interpretation ||
         `La imagen muestra características ${
@@ -134,23 +172,34 @@ Responde ÚNICAMENTE en formato JSON válido:
       recommendations:
         geminiData.recommendations ||
         "Para mayor precisión, analice imágenes de mayor resolución",
+      imageAnalysis: {
+        hasText,
+        extractedTextLength: extractedText.length,
+        wordCount,
+        textContent: extractedText.substring(0, 500), // Primeros 500 caracteres
+      },
       technicalDetails: {
         geminiScore: aiProbability,
         methodology:
-          "Análisis completo con Gemini 2.0 Flash especializado en detección de imágenes IA",
+          "Análisis completo de imagen con Gemini 2.0 Flash especializado en detección de IA",
         modelVersion: "gemini-2.0-flash",
         analysisDepth: "Exhaustivo",
-        imageAnalysis: "Análisis visual directo de la imagen",
+      },
+      imageInfo: {
+        fileName,
+        fileType,
+        hasText,
+        extractedLength: extractedText.length,
       },
     };
 
     return res.status(200).json(result);
   } catch (err: unknown) {
-    console.error("Analysis error:", err);
+    console.error("Image analysis error:", err);
     const errorMessage = err instanceof Error ? err.message : "Unknown error";
 
     return res.status(500).json({
-      error: "Analysis failed",
+      error: "Image analysis failed",
       details: errorMessage,
     });
   }

@@ -16,14 +16,17 @@ export function HomePage() {
             </div>
 
             <h1 className="text-4xl md:text-6xl font-bold text-slate-900 mb-6">
-              Sistema de Detección de
-              <span className="text-blue-600 block">Contenido IA</span>
+              Trustalyze
+              <span className="text-blue-600 block">
+                Detección Inteligente de IA
+              </span>
             </h1>
 
             <p className="text-xl text-slate-600 mb-8 max-w-3xl mx-auto leading-relaxed">
-              Plataforma avanzada basada en inteligencia artificial para
-              detectar y analizar contenido generado por IA vs contenido humano
-              en textos, documentos, imágenes y videos.
+              Plataforma profesional de análisis de contenido que determina si
+              textos, documentos, imágenes y videos fueron generados por
+              inteligencia artificial o creados por humanos. Tecnología avanzada
+              con explicaciones detalladas.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -170,51 +173,76 @@ export function HomePage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="bg-white p-8 rounded-xl shadow-sm border">
-              <div className="flex items-center mb-4">
-                <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center mr-4">
-                  <span className="text-white font-bold text-lg">HF</span>
-                </div>
-                <h3 className="text-xl font-semibold text-slate-900">
-                  Hugging Face
-                </h3>
-              </div>
-              <p className="text-slate-600">
-                Modelos especializados en detección de contenido generado por
-                IA, incluyendo roberta-base-openai-detector para análisis de
-                patrones lingüísticos.
-              </p>
-            </div>
-
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             <div className="bg-white p-8 rounded-xl shadow-sm border">
               <div className="flex items-center mb-4">
                 <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center mr-4">
                   <span className="text-white font-bold text-lg">G</span>
                 </div>
                 <h3 className="text-xl font-semibold text-slate-900">
-                  Google Gemini
+                  Google Gemini 2.0 Flash
                 </h3>
               </div>
               <p className="text-slate-600">
-                Gemini 2.0 Flash para análisis semántico avanzado y evaluación
-                contextual de la coherencia y naturalidad del contenido.
+                Modelo de IA de última generación para análisis semántico
+                avanzado, evaluación contextual y detección de patrones
+                característicos de contenido generado por IA.
+              </p>
+            </div>
+
+            <div className="bg-white p-8 rounded-xl shadow-sm border">
+              <div className="flex items-center mb-4">
+                <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center mr-4">
+                  <svg
+                    className="w-6 h-6 text-white"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-semibold text-slate-900">
+                  Análisis Multimodal
+                </h3>
+              </div>
+              <p className="text-slate-600">
+                Capacidad de procesar diferentes tipos de contenido: texto
+                plano, documentos PDF/DOCX, imágenes y videos con análisis
+                especializado para cada formato.
               </p>
             </div>
 
             <div className="bg-white p-8 rounded-xl shadow-sm border">
               <div className="flex items-center mb-4">
                 <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg flex items-center justify-center mr-4">
-                  <span className="text-white font-bold text-lg">GS</span>
+                  <svg
+                    className="w-6 h-6 text-white"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                    />
+                  </svg>
                 </div>
                 <h3 className="text-xl font-semibold text-slate-900">
-                  Google Search
+                  Privacidad y Seguridad
                 </h3>
               </div>
               <p className="text-slate-600">
-                API de búsqueda personalizada para verificar información y
-                encontrar fuentes relacionadas que ayuden en la validación del
-                contenido.
+                Cumplimiento con leyes de protección de datos colombianas,
+                cifrado de extremo a extremo y eliminación automática de
+                contenido original después del análisis.
               </p>
             </div>
           </div>

@@ -537,3 +537,4 @@ export function PrivacyPage() {
     </div>
   );
 }
+

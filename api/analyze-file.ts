@@ -1,93 +1,87 @@
-// Vercel Serverless Function - Análisis de Documentos REAL con Gemini
+// Vercel Serverless Function - Análisis de Documentos con Gemini
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import axios from "axios";
-import pdf from "pdf-parse";
-import mammoth from "mammoth";
+import * as mammoth from "mammoth";
+import * as pdfParse from "pdf-parse";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== "POST")
     return res.status(405).json({ error: "Method not allowed" });
 
-  const { fileBuffer, fileName, mimeType } = req.body as {
-    fileBuffer?: string;
-    fileName?: string;
-    mimeType?: string;
-  };
-
-  if (!fileBuffer || !fileName) {
-    return res.status(400).json({ error: "Missing fileBuffer or fileName" });
-  }
-
   try {
-    // 1. Extraer texto del documento
-    let extractedText = "";
-    const buffer = Buffer.from(fileBuffer, "base64");
+    // Obtener archivo del FormData
+    const formData = req.body;
+    if (!formData || !formData.file) {
+      return res.status(400).json({ error: "No file provided" });
+    }
 
-    if (
-      mimeType === "application/pdf" ||
-      fileName.toLowerCase().endsWith(".pdf")
-    ) {
-      const pdfData = await pdf(buffer);
+    const file = formData.file;
+    const fileName = file.name || "documento";
+    const fileType = file.type || "application/octet-stream";
+
+    // Extraer texto según el tipo de archivo
+    let extractedText = "";
+
+    if (fileType.includes("pdf")) {
+      const pdfBuffer = Buffer.from(file.data, "base64");
+      const pdfData = await pdfParse(pdfBuffer);
       extractedText = pdfData.text;
-    } else if (
-      mimeType ===
-        "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
-      fileName.toLowerCase().endsWith(".docx")
-    ) {
-      const result = await mammoth.extractRawText({ buffer });
+    } else if (fileType.includes("word") || fileType.includes("document")) {
+      const docBuffer = Buffer.from(file.data, "base64");
+      const result = await mammoth.extractRawText({ buffer: docBuffer });
       extractedText = result.value;
-    } else if (fileName.toLowerCase().endsWith(".txt")) {
-      extractedText = buffer.toString("utf-8");
+    } else if (fileType.includes("text") || fileType.includes("plain")) {
+      extractedText = Buffer.from(file.data, "base64").toString("utf-8");
     } else {
       return res.status(400).json({ error: "Unsupported file type" });
     }
 
-    if (!extractedText.trim()) {
-      return res.status(400).json({ error: "No text extracted from file" });
+    if (!extractedText || extractedText.trim().length === 0) {
+      return res.status(400).json({ error: "No text content found in file" });
     }
 
-    // 2. Análisis REAL con Gemini - Evaluación contextual del documento
-    const geminiPrompt = `Eres un experto en detección de documentos generados por IA. Analiza este documento de manera exhaustiva y determina si fue generado por inteligencia artificial o escrito por un humano.
+    // Análisis con Gemini
+    const geminiPrompt = `Eres un experto en detección de contenido generado por IA. Analiza este documento de manera exhaustiva y determina si fue generado por inteligencia artificial o escrito por un humano.
 
 INFORMACIÓN DEL DOCUMENTO:
 - Nombre: ${fileName}
-- Longitud: ${extractedText.length} caracteres
-- Tipo: ${mimeType || "Desconocido"}
-- Palabras: ${extractedText.split(/\s+/).length}
+- Tipo: ${fileType}
+- Longitud del texto: ${extractedText.length} caracteres
 
-CONTENIDO A ANALIZAR:
-"${extractedText.slice(0, 3000)}"
+TEXTO A ANALIZAR:
+"${extractedText}"
 
-METODOLOGÍA DE ANÁLISIS PROFESIONAL DE DOCUMENTOS:
-1. **Análisis Estructural**: Evalúa organización, coherencia, flujo y estructura del documento
-2. **Análisis Lingüístico**: Examina vocabulario, sintaxis, patrones de escritura y complejidad
-3. **Análisis de Contenido**: Verifica profundidad, originalidad, conocimiento específico y argumentación
-4. **Análisis de Estilo**: Evalúa consistencia estilística, tono y personalidad del autor
-5. **Análisis de Referencias**: Detecta citas, fuentes, metodología académica y referencias
-6. **Análisis de Complejidad**: Mide sofisticación conceptual, argumentativa y técnica
-7. **Análisis de Patrones**: Identifica repeticiones, estructuras artificiales y clichés
-8. **Análisis de Contexto**: Evalúa relevancia, actualidad y conocimiento del tema
+METODOLOGÍA DE ANÁLISIS PROFESIONAL:
+1. **Análisis Estructural**: Evalúa organización lógica, coherencia, fluidez y estructura del documento
+2. **Análisis Lingüístico**: Examina vocabulario, sintaxis, patrones de lenguaje y complejidad
+3. **Análisis Semántico**: Verifica coherencia contextual, conocimiento específico y profundidad
+4. **Análisis de Patrones**: Identifica repeticiones, estructuras artificiales y patrones típicos de IA
+5. **Análisis de Personalidad**: Detecta características humanas vs artificiales en el estilo
+6. **Análisis de Originalidad**: Evalúa creatividad, pensamiento crítico y perspectivas únicas
+7. **Análisis de Emociones**: Detecta expresiones emocionales auténticas vs simuladas
+8. **Análisis de Contexto**: Verifica relevancia temporal, cultural y situacional
 
 INSTRUCCIONES CRÍTICAS:
-- Realiza un análisis PROFUNDO y TÉCNICO del documento
+- Realiza un análisis PROFUNDO y TÉCNICO
 - Proporciona una determinación CLARA y DEFINITIVA (IA o Humano)
-- Calcula porcentajes REALES basados en evidencia concreta del contenido
-- Justifica cada factor con ejemplos específicos del documento
+- Calcula porcentajes REALES basados en evidencia concreta
+- Justifica cada factor con ejemplos específicos del texto
 - Usa un rango de probabilidad REALISTA basado en el análisis
-- Sé ESPECÍFICO en tus observaciones sobre el tipo de documento
+- Sé ESPECÍFICO en tus observaciones
+- Considera el contexto de documento (académico, profesional, etc.)
 
 Responde ÚNICAMENTE en formato JSON válido:
 {
   "ai_probability": 0.0-1.0,
   "final_determination": "IA" o "Humano",
   "confidence_level": "Alta", "Media" o "Baja",
-  "methodology": "Descripción detallada de la metodología aplicada al documento",
+  "methodology": "Descripción detallada de la metodología aplicada",
   "interpretation": "Interpretación clara del resultado en términos prácticos",
   "analysis_factors": [
     {
       "factor": "nombre específico del factor analizado",
       "score": 0.0-1.0,
-      "explanation": "explicación detallada con ejemplos específicos del documento"
+      "explanation": "explicación detallada con ejemplos específicos del texto"
     }
   ],
   "key_indicators": ["indicador específico 1", "indicador específico 2", "indicador específico 3"],
@@ -139,16 +133,43 @@ Responde ÚNICAMENTE en formato JSON válido:
     const aiProbability = Math.round(geminiData.ai_probability * 100);
     const humanProbability = Math.round((1 - geminiData.ai_probability) * 100);
 
+    // Análisis de texto básico para contexto adicional
+    const wordCount = extractedText.split(/\s+/).length;
+    const sentenceCount = extractedText
+      .split(/[.!?]+/)
+      .filter((s) => s.trim().length > 0).length;
+    const avgWordsPerSentence =
+      sentenceCount > 0 ? Math.round(wordCount / sentenceCount) : 0;
+
+    const hasEmotionalLanguage =
+      /(siento|me siento|emocion|frustr|alegr|triste|feliz|angustia|ansiedad|miedo|esperanza)/i.test(
+        extractedText
+      );
+    const hasPersonalPronouns =
+      /(yo|me|mi|mí|nosotros|nos|nuestro|nuestra)/i.test(extractedText);
+    const hasComplexSentences = avgWordsPerSentence > 15;
+    const hasRepetitivePatterns = /(\b\w+\b).*\1.*\1/i.test(extractedText);
+
+    const textAnalysis = {
+      length: extractedText.length,
+      wordCount,
+      sentenceCount,
+      avgWordsPerSentence,
+      hasEmotionalLanguage,
+      hasPersonalPronouns,
+      hasComplexSentences,
+      hasRepetitivePatterns,
+    };
+
     const result = {
-      fileName,
-      extractedLength: extractedText.length,
+      inputLength: extractedText.length,
       aiProbability,
       humanProbability,
       finalDetermination: geminiData.final_determination,
       confidenceLevel: geminiData.confidence_level,
       methodology:
         geminiData.methodology ||
-        "Análisis exhaustivo con modelo Gemini especializado en documentos",
+        "Análisis exhaustivo de documento con modelo Gemini 2.0 Flash especializado en detección de contenido generado por IA",
       interpretation:
         geminiData.interpretation ||
         `El documento muestra características ${
@@ -163,23 +184,28 @@ Responde ÚNICAMENTE en formato JSON válido:
       recommendations:
         geminiData.recommendations ||
         "Para mayor precisión, analice documentos más extensos",
+      textAnalysis,
       technicalDetails: {
         geminiScore: aiProbability,
         methodology:
-          "Análisis completo con Gemini 2.0 Flash especializado en detección de documentos IA",
+          "Análisis completo de documento con Gemini 2.0 Flash especializado en detección de IA",
         modelVersion: "gemini-2.0-flash",
         analysisDepth: "Exhaustivo",
-        documentType: mimeType || "Desconocido",
+      },
+      documentInfo: {
+        fileName,
+        fileType,
+        extractedLength: extractedText.length,
       },
     };
 
     return res.status(200).json(result);
   } catch (err: unknown) {
-    console.error("Analysis error:", err);
+    console.error("Document analysis error:", err);
     const errorMessage = err instanceof Error ? err.message : "Unknown error";
 
     return res.status(500).json({
-      error: "Analysis failed",
+      error: "Document analysis failed",
       details: errorMessage,
     });
   }

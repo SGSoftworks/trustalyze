@@ -1,4 +1,21 @@
 {
+  "functions": {
+    "api/analyze-text.ts": {
+      "maxDuration": 30
+    },
+    "api/analyze-file.ts": {
+      "maxDuration": 30
+    },
+    "api/analyze-image.ts": {
+      "maxDuration": 30
+    },
+    "api/analyze-video.ts": {
+      "maxDuration": 30
+    },
+    "api/search-related.ts": {
+      "maxDuration": 10
+    }
+  },
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/$1" },
     { "source": "/(.*)", "destination": "/index.html" }

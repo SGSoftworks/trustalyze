@@ -134,7 +134,7 @@ Responde ÚNICAMENTE en formato JSON válido:
       confidenceLevel: geminiData.confidence_level,
       methodology:
         geminiData.methodology ||
-        "Análisis exhaustivo con modelo Gemini especializado",
+        "Análisis exhaustivo con modelo Gemini 2.0 Flash especializado en detección de contenido generado por IA",
       interpretation:
         geminiData.interpretation ||
         `El texto muestra características ${
