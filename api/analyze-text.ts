@@ -3,12 +3,30 @@ import type { VercelRequest, VercelResponse } from "@vercel/node";
 import axios from "axios";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  // Configurar CORS
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  if (req.method === "OPTIONS") {
+    return res.status(200).end();
+  }
+
   if (req.method !== "POST")
     return res.status(405).json({ error: "Method not allowed" });
 
   const { text } = req.body as { text?: string };
   if (!text || text.trim().length === 0)
     return res.status(400).json({ error: "Missing or empty text" });
+
+  // Verificar variables de entorno
+  if (!process.env.GEMINI_API_KEY) {
+    console.error("GEMINI_API_KEY not found in environment variables");
+    return res.status(500).json({ 
+      error: "Server configuration error", 
+      details: "API key not configured" 
+    });
+  }
 
   try {
     // Análisis REAL con Gemini - Detección de contenido generado por IA
@@ -55,9 +73,13 @@ Responde ÚNICAMENTE en formato JSON válido:
   "recommendations": "Recomendación específica para verificación adicional"
 }`;
 
+    const geminiEndpoint = process.env.GEMINI_API_ENDPOINT ||
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
+    
+    console.log("Calling Gemini API at:", geminiEndpoint);
+    
     const geminiResp = await axios.post(
-      process.env.GEMINI_API_ENDPOINT ||
-        "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent",
+      geminiEndpoint,
       {
         contents: [{ parts: [{ text: geminiPrompt }] }],
         generationConfig: {
@@ -162,11 +184,30 @@ Responde ÚNICAMENTE en formato JSON válido:
     return res.status(200).json(result);
   } catch (err: unknown) {
     console.error("Analysis error:", err);
-    const errorMessage = err instanceof Error ? err.message : "Unknown error";
+    
+    let errorMessage = "Unknown error";
+    let statusCode = 500;
+    
+    if (err instanceof Error) {
+      errorMessage = err.message;
+      
+      // Manejar errores específicos de la API
+      if (err.message.includes("API key")) {
+        statusCode = 401;
+        errorMessage = "Invalid API key";
+      } else if (err.message.includes("timeout")) {
+        statusCode = 408;
+        errorMessage = "Request timeout";
+      } else if (err.message.includes("network")) {
+        statusCode = 503;
+        errorMessage = "Service unavailable";
+      }
+    }
 
-    return res.status(500).json({
+    return res.status(statusCode).json({
       error: "Analysis failed",
       details: errorMessage,
+      timestamp: new Date().toISOString(),
     });
   }
 }

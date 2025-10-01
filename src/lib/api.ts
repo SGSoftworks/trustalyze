@@ -13,7 +13,35 @@ export class APIService {
   }
 
   async analyzeText(text: string): Promise<AnalysisResult> {
-    const response = await fetch(`${API_BASE_URL}/analyze-text`, {
+    try {
+      const response = await fetch(`${API_BASE_URL}/analyze-text`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ text }),
+      });
+
+      if (!response.ok) {
+        // Si falla la API principal, intentar con el fallback
+        console.warn("Primary API failed, trying fallback...");
+        return await this.analyzeTextFallback(text);
+      }
+
+      const result = await response.json();
+      return {
+        ...result,
+        kind: "texto" as AnalysisKind,
+        createdAt: Date.now(),
+      };
+    } catch (error) {
+      console.warn("Primary API error, trying fallback:", error);
+      return await this.analyzeTextFallback(text);
+    }
+  }
+
+  private async analyzeTextFallback(text: string): Promise<AnalysisResult> {
+    const response = await fetch(`${API_BASE_URL}/analyze-text-fallback`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -22,7 +50,8 @@ export class APIService {
     });
 
     if (!response.ok) {
-      throw new Error(`Error ${response.status}: ${response.statusText}`);
+      const errorData = await response.json();
+      throw new Error(`Error ${response.status}: ${errorData.details || errorData.error}`);
     }
 
     const result = await response.json();
