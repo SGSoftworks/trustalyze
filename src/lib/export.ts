@@ -14,7 +14,7 @@ export class ExportService {
     const exportData = {
       exportDate: new Date().toISOString(),
       totalResults: results.length,
-      results: results.map(result => ({
+      results: results.map((result) => ({
         id: result.id,
         kind: result.kind,
         createdAt: new Date(result.createdAt).toISOString(),
@@ -30,7 +30,7 @@ export class ExportService {
         weaknesses: result.weaknesses,
         recommendations: result.recommendations,
         technicalDetails: result.technicalDetails,
-      }))
+      })),
     };
 
     return JSON.stringify(exportData, null, 2);
@@ -51,10 +51,10 @@ export class ExportService {
       "Indicadores Clave",
       "Fortalezas",
       "Debilidades",
-      "Recomendaciones"
+      "Recomendaciones",
     ];
 
-    const rows = results.map(result => [
+    const rows = results.map((result) => [
       result.id || "",
       result.kind,
       new Date(result.createdAt).toLocaleString(),
@@ -64,15 +64,19 @@ export class ExportService {
       result.confidenceLevel || "",
       result.methodology || "",
       result.interpretation || "",
-      result.analysisFactors?.map(f => f.factor).join("; ") || "",
+      result.analysisFactors?.map((f) => f.factor).join("; ") || "",
       result.keyIndicators?.join("; ") || "",
       result.strengths?.join("; ") || "",
       result.weaknesses?.join("; ") || "",
-      result.recommendations || ""
+      result.recommendations || "",
     ]);
 
     const csvContent = [headers, ...rows]
-      .map(row => row.map(field => `"${field.toString().replace(/"/g, '""')}"`).join(","))
+      .map((row) =>
+        row
+          .map((field) => `"${field.toString().replace(/"/g, '""')}"`)
+          .join(",")
+      )
       .join("\n");
 
     return csvContent;
@@ -88,7 +92,7 @@ export class ExportService {
 
   private generatePDFHTML(results: AnalysisResult[]): string {
     const currentDate = new Date().toLocaleString();
-    
+
     return `
 <!DOCTYPE html>
 <html>
@@ -120,51 +124,87 @@ export class ExportService {
     <div class="summary">
         <h2>Resumen</h2>
         <p><strong>Total de análisis:</strong> ${results.length}</p>
-        <p><strong>Contenido IA detectado:</strong> ${results.filter(r => r.aiProbability > 50).length}</p>
-        <p><strong>Contenido Humano detectado:</strong> ${results.filter(r => r.humanProbability > 50).length}</p>
+        <p><strong>Contenido IA detectado:</strong> ${
+          results.filter((r) => r.aiProbability > 50).length
+        }</p>
+        <p><strong>Contenido Humano detectado:</strong> ${
+          results.filter((r) => r.humanProbability > 50).length
+        }</p>
     </div>
     
-    ${results.map(result => `
+    ${results
+      .map(
+        (result) => `
         <div class="result">
             <div class="result-header">
                 Análisis #${result.id || "N/A"} - ${result.kind.toUpperCase()}
-                <span style="float: right;">${new Date(result.createdAt).toLocaleString()}</span>
+                <span style="float: right;">${new Date(
+                  result.createdAt
+                ).toLocaleString()}</span>
             </div>
             
             <div class="probabilities">
                 <div class="prob-item">
                     <div>IA: ${result.aiProbability}%</div>
                     <div class="prob-bar">
-                        <div class="prob-fill-ai" style="width: ${result.aiProbability}%"></div>
+                        <div class="prob-fill-ai" style="width: ${
+                          result.aiProbability
+                        }%"></div>
                     </div>
                 </div>
                 <div class="prob-item">
                     <div>Humano: ${result.humanProbability}%</div>
                     <div class="prob-bar">
-                        <div class="prob-fill-human" style="width: ${result.humanProbability}%"></div>
+                        <div class="prob-fill-human" style="width: ${
+                          result.humanProbability
+                        }%"></div>
                     </div>
                 </div>
             </div>
             
-            <p><strong>Determinación:</strong> ${result.finalDetermination || "N/A"}</p>
-            <p><strong>Confianza:</strong> ${result.confidenceLevel || "N/A"}</p>
+            <p><strong>Determinación:</strong> ${
+              result.finalDetermination || "N/A"
+            }</p>
+            <p><strong>Confianza:</strong> ${
+              result.confidenceLevel || "N/A"
+            }</p>
             
-            ${result.interpretation ? `<p><strong>Interpretación:</strong> ${result.interpretation}</p>` : ""}
+            ${
+              result.interpretation
+                ? `<p><strong>Interpretación:</strong> ${result.interpretation}</p>`
+                : ""
+            }
             
-            ${result.analysisFactors && result.analysisFactors.length > 0 ? `
+            ${
+              result.analysisFactors && result.analysisFactors.length > 0
+                ? `
                 <div class="factors">
                     <strong>Factores de Análisis:</strong>
-                    ${result.analysisFactors.map(factor => `
+                    ${result.analysisFactors
+                      .map(
+                        (factor) => `
                         <div class="factor">
-                            <strong>${factor.factor}:</strong> ${Math.round(factor.score * 100)}% - ${factor.explanation}
+                            <strong>${factor.factor}:</strong> ${Math.round(
+                          factor.score * 100
+                        )}% - ${factor.explanation}
                         </div>
-                    `).join("")}
+                    `
+                      )
+                      .join("")}
                 </div>
-            ` : ""}
+            `
+                : ""
+            }
             
-            ${result.recommendations ? `<p><strong>Recomendaciones:</strong> ${result.recommendations}</p>` : ""}
+            ${
+              result.recommendations
+                ? `<p><strong>Recomendaciones:</strong> ${result.recommendations}</p>`
+                : ""
+            }
         </div>
-    `).join("")}
+    `
+      )
+      .join("")}
 </body>
 </html>`;
   }
@@ -183,13 +223,17 @@ export class ExportService {
 
   downloadJSON(results: AnalysisResult[]): void {
     const content = this.exportToJSON(results);
-    const filename = `trustalyze-export-${new Date().toISOString().split('T')[0]}.json`;
+    const filename = `trustalyze-export-${
+      new Date().toISOString().split("T")[0]
+    }.json`;
     this.downloadFile(content, filename, "application/json");
   }
 
   downloadCSV(results: AnalysisResult[]): void {
     const content = this.exportToCSV(results);
-    const filename = `trustalyze-export-${new Date().toISOString().split('T')[0]}.csv`;
+    const filename = `trustalyze-export-${
+      new Date().toISOString().split("T")[0]
+    }.csv`;
     this.downloadFile(content, filename, "text/csv");
   }
 
@@ -198,7 +242,9 @@ export class ExportService {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = `trustalyze-export-${new Date().toISOString().split('T')[0]}.html`;
+    link.download = `trustalyze-export-${
+      new Date().toISOString().split("T")[0]
+    }.html`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

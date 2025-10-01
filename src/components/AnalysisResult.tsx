@@ -243,102 +243,119 @@ export function AnalysisResult({
         <AnalysisPipeline steps={result.pipelineSteps} />
       )}
 
-       {/* Análisis de Video */}
-       {result.videoAnalysis && (
-         <div className="bg-white rounded-lg border p-6">
-           <h3 className="text-lg font-semibold text-slate-900 mb-4">
-             Análisis de Video
-           </h3>
-           <div className="grid md:grid-cols-2 gap-4 text-sm">
-             <div>
-               <span className="font-medium text-slate-600">Duración:</span>
-               <span className="ml-2 text-slate-900">
-                 {result.videoAnalysis.duration.toFixed(1)} segundos
-               </span>
-             </div>
-             <div>
-               <span className="font-medium text-slate-600">Tamaño:</span>
-               <span className="ml-2 text-slate-900">
-                 {(result.videoAnalysis.fileSize / 1024 / 1024).toFixed(2)} MB
-               </span>
-             </div>
-             <div>
-               <span className="font-medium text-slate-600">Audio:</span>
-               <span className="ml-2 text-slate-900">
-                 {result.videoAnalysis.hasAudio ? "Sí" : "No"}
-               </span>
-             </div>
-             <div>
-               <span className="font-medium text-slate-600">Resolución:</span>
-               <span className="ml-2 text-slate-900">
-                 {result.videoAnalysis.resolution}
-               </span>
-             </div>
-           </div>
-           
-           {result.videoAnalysis.audioTranscription && (
-             <div className="mt-4">
-               <h4 className="font-medium text-slate-900 mb-2">Transcripción de Audio:</h4>
-               <p className="text-sm text-slate-700 bg-slate-50 p-3 rounded">
-                 {result.videoAnalysis.audioTranscription}
-               </p>
-             </div>
-           )}
-           
-           {result.videoAnalysis.deepfakeIndicators && result.videoAnalysis.deepfakeIndicators.length > 0 && (
-             <div className="mt-4">
-               <h4 className="font-medium text-slate-900 mb-2">Indicadores de Deepfake:</h4>
-               <ul className="text-sm text-slate-700 space-y-1">
-                 {result.videoAnalysis.deepfakeIndicators.map((indicator, index) => (
-                   <li key={index} className="flex items-start gap-2">
-                     <svg className="w-4 h-4 text-orange-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                     </svg>
-                     {indicator}
-                   </li>
-                 ))}
-               </ul>
-             </div>
-           )}
-         </div>
-       )}
+      {/* Análisis de Video */}
+      {result.videoAnalysis && (
+        <div className="bg-white rounded-lg border p-6">
+          <h3 className="text-lg font-semibold text-slate-900 mb-4">
+            Análisis de Video
+          </h3>
+          <div className="grid md:grid-cols-2 gap-4 text-sm">
+            <div>
+              <span className="font-medium text-slate-600">Duración:</span>
+              <span className="ml-2 text-slate-900">
+                {result.videoAnalysis.duration.toFixed(1)} segundos
+              </span>
+            </div>
+            <div>
+              <span className="font-medium text-slate-600">Tamaño:</span>
+              <span className="ml-2 text-slate-900">
+                {(result.videoAnalysis.fileSize / 1024 / 1024).toFixed(2)} MB
+              </span>
+            </div>
+            <div>
+              <span className="font-medium text-slate-600">Audio:</span>
+              <span className="ml-2 text-slate-900">
+                {result.videoAnalysis.hasAudio ? "Sí" : "No"}
+              </span>
+            </div>
+            <div>
+              <span className="font-medium text-slate-600">Resolución:</span>
+              <span className="ml-2 text-slate-900">
+                {result.videoAnalysis.resolution}
+              </span>
+            </div>
+          </div>
 
-       {/* Detalles Técnicos */}
-       {result.technicalDetails && (
-         <div className="bg-slate-50 rounded-lg border p-6">
-           <h3 className="text-lg font-semibold text-slate-900 mb-4">
-             Detalles Técnicos
-           </h3>
-           <div className="grid md:grid-cols-2 gap-4 text-sm">
-             <div>
-               <span className="font-medium text-slate-600">Modelo:</span>
-               <span className="ml-2 text-slate-900">
-                 {result.technicalDetails.modelVersion}
-               </span>
-             </div>
-             <div>
-               <span className="font-medium text-slate-600">Profundidad:</span>
-               <span className="ml-2 text-slate-900">
-                 {result.technicalDetails.analysisDepth}
-               </span>
-             </div>
-             <div>
-               <span className="font-medium text-slate-600">Metodología:</span>
-               <span className="ml-2 text-slate-900">
-                 {result.technicalDetails.methodology}
-               </span>
-             </div>
-             <div>
-               <span className="font-medium text-slate-600">
-                 Puntuación Gemini:
-               </span>
-               <span className="ml-2 text-slate-900">
-                 {result.technicalDetails.geminiScore}%
-               </span>
-             </div>
-           </div>
-         </div>
-       )}
+          {result.videoAnalysis.audioTranscription && (
+            <div className="mt-4">
+              <h4 className="font-medium text-slate-900 mb-2">
+                Transcripción de Audio:
+              </h4>
+              <p className="text-sm text-slate-700 bg-slate-50 p-3 rounded">
+                {result.videoAnalysis.audioTranscription}
+              </p>
+            </div>
+          )}
+
+          {result.videoAnalysis.deepfakeIndicators &&
+            result.videoAnalysis.deepfakeIndicators.length > 0 && (
+              <div className="mt-4">
+                <h4 className="font-medium text-slate-900 mb-2">
+                  Indicadores de Deepfake:
+                </h4>
+                <ul className="text-sm text-slate-700 space-y-1">
+                  {result.videoAnalysis.deepfakeIndicators.map(
+                    (indicator, index) => (
+                      <li key={index} className="flex items-start gap-2">
+                        <svg
+                          className="w-4 h-4 text-orange-500 mt-0.5 flex-shrink-0"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                          />
+                        </svg>
+                        {indicator}
+                      </li>
+                    )
+                  )}
+                </ul>
+              </div>
+            )}
+        </div>
+      )}
+
+      {/* Detalles Técnicos */}
+      {result.technicalDetails && (
+        <div className="bg-slate-50 rounded-lg border p-6">
+          <h3 className="text-lg font-semibold text-slate-900 mb-4">
+            Detalles Técnicos
+          </h3>
+          <div className="grid md:grid-cols-2 gap-4 text-sm">
+            <div>
+              <span className="font-medium text-slate-600">Modelo:</span>
+              <span className="ml-2 text-slate-900">
+                {result.technicalDetails.modelVersion}
+              </span>
+            </div>
+            <div>
+              <span className="font-medium text-slate-600">Profundidad:</span>
+              <span className="ml-2 text-slate-900">
+                {result.technicalDetails.analysisDepth}
+              </span>
+            </div>
+            <div>
+              <span className="font-medium text-slate-600">Metodología:</span>
+              <span className="ml-2 text-slate-900">
+                {result.technicalDetails.methodology}
+              </span>
+            </div>
+            <div>
+              <span className="font-medium text-slate-600">
+                Puntuación Gemini:
+              </span>
+              <span className="ml-2 text-slate-900">
+                {result.technicalDetails.geminiScore}%
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
