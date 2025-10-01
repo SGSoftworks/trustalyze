@@ -103,7 +103,9 @@ export class APIService {
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(`Error ${response.status}: ${errorData.details || errorData.error}`);
+      throw new Error(
+        `Error ${response.status}: ${errorData.details || errorData.error}`
+      );
     }
 
     const result = await response.json();
@@ -153,7 +155,9 @@ export class APIService {
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(`Error ${response.status}: ${errorData.details || errorData.error}`);
+      throw new Error(
+        `Error ${response.status}: ${errorData.details || errorData.error}`
+      );
     }
 
     const result = await response.json();
@@ -203,12 +207,15 @@ export class APIService {
     const factors = [];
 
     // Factor 1: Tamaño de archivo
-    if (fileSize > 50 * 1024 * 1024) { // > 50MB
+    if (fileSize > 50 * 1024 * 1024) {
+      // > 50MB
       aiScore += 0.2;
       factors.push({
         factor: "Archivo muy grande",
         score: 0.7,
-        explanation: `Archivo de ${(fileSize / 1024 / 1024).toFixed(2)}MB, posiblemente generado por IA`
+        explanation: `Archivo de ${(fileSize / 1024 / 1024).toFixed(
+          2
+        )}MB, posiblemente generado por IA`,
       });
     }
 
@@ -218,18 +225,18 @@ export class APIService {
       factors.push({
         factor: "Formato MP4",
         score: 0.6,
-        explanation: "MP4 es común en videos generados por IA"
+        explanation: "MP4 es común en videos generados por IA",
       });
     }
 
     // Factor 3: Nombre del archivo
-    const suspiciousNames = ['generated', 'ai', 'auto', 'synthetic'];
-    if (suspiciousNames.some(name => fileName.toLowerCase().includes(name))) {
+    const suspiciousNames = ["generated", "ai", "auto", "synthetic"];
+    if (suspiciousNames.some((name) => fileName.toLowerCase().includes(name))) {
       aiScore += 0.3;
       factors.push({
         factor: "Nombre sospechoso",
         score: 0.9,
-        explanation: `El nombre "${fileName}" sugiere generación automática`
+        explanation: `El nombre "${fileName}" sugiere generación automática`,
       });
     }
 
@@ -241,8 +248,10 @@ export class APIService {
       aiProbability,
       humanProbability,
       finalDetermination: aiProbability > 50 ? "IA" : "Humano",
-      confidenceLevel: aiProbability > 70 || aiProbability < 30 ? "Alta" : "Media",
-      methodology: "Análisis de metadatos de video (modo fallback - sin procesamiento)",
+      confidenceLevel:
+        aiProbability > 70 || aiProbability < 30 ? "Alta" : "Media",
+      methodology:
+        "Análisis de metadatos de video (modo fallback - sin procesamiento)",
       interpretation: `El video muestra características ${
         aiProbability > 50
           ? "típicas de generación automática"
@@ -252,36 +261,35 @@ export class APIService {
       keyIndicators: [
         fileSize > 50 * 1024 * 1024 ? "Archivo grande" : "Archivo normal",
         fileType.includes("mp4") ? "Formato MP4" : "Otro formato",
-        suspiciousNames.some(name => fileName.toLowerCase().includes(name)) ? "Nombre sospechoso" : "Nombre normal"
+        suspiciousNames.some((name) => fileName.toLowerCase().includes(name))
+          ? "Nombre sospechoso"
+          : "Nombre normal",
       ],
-      strengths: aiProbability > 50 ? [
-        "Calidad consistente",
-        "Duración controlada"
-      ] : [
-        "Variedad natural",
-        "Elementos orgánicos"
-      ],
-      weaknesses: aiProbability > 50 ? [
-        "Falta de imperfecciones naturales",
-        "Patrones muy regulares"
-      ] : [
-        "Posibles inconsistencias menores",
-        "Calidad variable"
-      ],
-      recommendations: "Para análisis más preciso, configure procesamiento de video y análisis de audio",
+      strengths:
+        aiProbability > 50
+          ? ["Calidad consistente", "Duración controlada"]
+          : ["Variedad natural", "Elementos orgánicos"],
+      weaknesses:
+        aiProbability > 50
+          ? ["Falta de imperfecciones naturales", "Patrones muy regulares"]
+          : ["Posibles inconsistencias menores", "Calidad variable"],
+      recommendations:
+        "Para análisis más preciso, configure procesamiento de video y análisis de audio",
       videoAnalysis: {
         fileSize,
         duration: Math.random() * 300, // Simular duración
         hasAudio: Math.random() > 0.3,
         frameRate: 0,
         resolution: "unknown",
-        audioTranscription: "Transcripción simulada - en producción se extraería del video",
+        audioTranscription:
+          "Transcripción simulada - en producción se extraería del video",
         deepfakeIndicators: [
           "Análisis de consistencia facial",
           "Detección de artefactos de generación",
-          "Verificación de sincronización audio-video"
+          "Verificación de sincronización audio-video",
         ],
-        frameAnalysis: "Análisis de frame simulado - en producción se extraería del video"
+        frameAnalysis:
+          "Análisis de frame simulado - en producción se extraería del video",
       },
       technicalDetails: {
         geminiScore: aiProbability,

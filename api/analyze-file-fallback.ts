@@ -27,19 +27,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // Análisis básico de metadatos de archivo
     const fileSize = file.size || 0;
-    const fileExtension = fileName.split('.').pop()?.toLowerCase() || '';
+    const fileExtension = fileName.split(".").pop()?.toLowerCase() || "";
 
     // Análisis heurístico básico para documentos
     let aiScore = 0;
     const factors = [];
 
     // Factor 1: Tamaño de archivo
-    if (fileSize > 2 * 1024 * 1024) { // > 2MB
+    if (fileSize > 2 * 1024 * 1024) {
+      // > 2MB
       aiScore += 0.2;
       factors.push({
         factor: "Archivo grande",
         score: 0.7,
-        explanation: `Archivo de ${(fileSize / 1024 / 1024).toFixed(2)}MB, posiblemente generado por IA`
+        explanation: `Archivo de ${(fileSize / 1024 / 1024).toFixed(
+          2
+        )}MB, posiblemente generado por IA`,
       });
     }
 
@@ -49,45 +52,47 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       factors.push({
         factor: "Formato PDF",
         score: 0.6,
-        explanation: "PDF es común en documentos generados por IA"
+        explanation: "PDF es común en documentos generados por IA",
       });
     } else if (fileType.includes("word") || fileType.includes("document")) {
       aiScore += 0.15;
       factors.push({
         factor: "Documento Word",
         score: 0.7,
-        explanation: "Word es frecuentemente usado para documentos generados por IA"
+        explanation:
+          "Word es frecuentemente usado para documentos generados por IA",
       });
     }
 
     // Factor 3: Nombre del archivo
-    const suspiciousNames = ['generated', 'ai', 'auto', 'draft', 'temp'];
-    if (suspiciousNames.some(name => fileName.toLowerCase().includes(name))) {
+    const suspiciousNames = ["generated", "ai", "auto", "draft", "temp"];
+    if (suspiciousNames.some((name) => fileName.toLowerCase().includes(name))) {
       aiScore += 0.3;
       factors.push({
         factor: "Nombre sospechoso",
         score: 0.9,
-        explanation: `El nombre "${fileName}" sugiere generación automática`
+        explanation: `El nombre "${fileName}" sugiere generación automática`,
       });
     }
 
     // Factor 4: Extensión de archivo
-    if (['docx', 'pdf', 'txt'].includes(fileExtension)) {
+    if (["docx", "pdf", "txt"].includes(fileExtension)) {
       aiScore += 0.1;
       factors.push({
         factor: "Formato estándar",
         score: 0.6,
-        explanation: "Formato común para documentos generados por IA"
+        explanation: "Formato común para documentos generados por IA",
       });
     }
 
     // Factor 5: Tamaño muy pequeño
-    if (fileSize < 1024) { // < 1KB
+    if (fileSize < 1024) {
+      // < 1KB
       aiScore -= 0.2;
       factors.push({
         factor: "Archivo muy pequeño",
         score: 0.3,
-        explanation: "Archivo muy pequeño, probablemente creado manualmente"
+        explanation: "Archivo muy pequeño, probablemente creado manualmente",
       });
     }
 
@@ -100,8 +105,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       aiProbability,
       humanProbability,
       finalDetermination: aiProbability > 50 ? "IA" : "Humano",
-      confidenceLevel: aiProbability > 70 || aiProbability < 30 ? "Alta" : "Media",
-      methodology: "Análisis de metadatos de archivo (modo fallback - sin parsing)",
+      confidenceLevel:
+        aiProbability > 70 || aiProbability < 30 ? "Alta" : "Media",
+      methodology:
+        "Análisis de metadatos de archivo (modo fallback - sin parsing)",
       interpretation: `El documento muestra características ${
         aiProbability > 50
           ? "típicas de generación automática"
@@ -111,30 +118,27 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       keyIndicators: [
         fileSize > 2 * 1024 * 1024 ? "Archivo grande" : "Archivo normal",
         fileType.includes("pdf") ? "Formato PDF" : "Otro formato",
-        suspiciousNames.some(name => fileName.toLowerCase().includes(name)) ? "Nombre sospechoso" : "Nombre normal"
+        suspiciousNames.some((name) => fileName.toLowerCase().includes(name))
+          ? "Nombre sospechoso"
+          : "Nombre normal",
       ],
-      strengths: aiProbability > 50 ? [
-        "Estructura consistente",
-        "Formato estándar"
-      ] : [
-        "Variedad en contenido",
-        "Elementos únicos"
-      ],
-      weaknesses: aiProbability > 50 ? [
-        "Falta de personalización",
-        "Patrones predecibles"
-      ] : [
-        "Posibles inconsistencias menores",
-        "Estructura variable"
-      ],
-      recommendations: "Para análisis más preciso, configure parsing de documentos y análisis de contenido",
+      strengths:
+        aiProbability > 50
+          ? ["Estructura consistente", "Formato estándar"]
+          : ["Variedad en contenido", "Elementos únicos"],
+      weaknesses:
+        aiProbability > 50
+          ? ["Falta de personalización", "Patrones predecibles"]
+          : ["Posibles inconsistencias menores", "Estructura variable"],
+      recommendations:
+        "Para análisis más preciso, configure parsing de documentos y análisis de contenido",
       documentAnalysis: {
         fileSize,
         fileName,
         fileType,
         extension: fileExtension,
         isLarge: fileSize > 2 * 1024 * 1024,
-        isSmall: fileSize < 1024
+        isSmall: fileSize < 1024,
       },
       technicalDetails: {
         geminiScore: aiProbability,

@@ -41,12 +41,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const factors = [];
 
     // Factor 1: Tamaño de archivo
-    if (fileSize > 5 * 1024 * 1024) { // > 5MB
+    if (fileSize > 5 * 1024 * 1024) {
+      // > 5MB
       aiScore += 0.2;
       factors.push({
         factor: "Archivo muy grande",
         score: 0.7,
-        explanation: `Archivo de ${(fileSize / 1024 / 1024).toFixed(2)}MB, posiblemente generado por IA`
+        explanation: `Archivo de ${(fileSize / 1024 / 1024).toFixed(
+          2
+        )}MB, posiblemente generado por IA`,
       });
     }
 
@@ -56,7 +59,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       factors.push({
         factor: "Resolución muy alta",
         score: 0.8,
-        explanation: `Resolución ${imageWidth}x${imageHeight}, típica de imágenes generadas por IA`
+        explanation: `Resolución ${imageWidth}x${imageHeight}, típica de imágenes generadas por IA`,
       });
     }
 
@@ -66,7 +69,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       factors.push({
         factor: "Formato PNG",
         score: 0.6,
-        explanation: "PNG es común en imágenes generadas por IA"
+        explanation: "PNG es común en imágenes generadas por IA",
       });
     }
 
@@ -76,7 +79,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       factors.push({
         factor: "Texto en imagen",
         score: 0.7,
-        explanation: "La presencia de texto puede indicar generación por IA"
+        explanation: "La presencia de texto puede indicar generación por IA",
       });
     }
 
@@ -89,7 +92,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       aiProbability,
       humanProbability,
       finalDetermination: aiProbability > 50 ? "IA" : "Humano",
-      confidenceLevel: aiProbability > 70 || aiProbability < 30 ? "Alta" : "Media",
+      confidenceLevel:
+        aiProbability > 70 || aiProbability < 30 ? "Alta" : "Media",
       methodology: "Análisis de metadatos de imagen (modo fallback - sin OCR)",
       interpretation: `La imagen muestra características ${
         aiProbability > 50
@@ -100,30 +104,25 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       keyIndicators: [
         fileSize > 5 * 1024 * 1024 ? "Archivo grande" : "Archivo normal",
         imageWidth > 1500 ? "Alta resolución" : "Resolución estándar",
-        hasText ? "Contiene texto" : "Sin texto visible"
+        hasText ? "Contiene texto" : "Sin texto visible",
       ],
-      strengths: aiProbability > 50 ? [
-        "Calidad consistente",
-        "Composición equilibrada"
-      ] : [
-        "Variedad natural",
-        "Elementos orgánicos"
-      ],
-      weaknesses: aiProbability > 50 ? [
-        "Falta de imperfecciones naturales",
-        "Patrones muy regulares"
-      ] : [
-        "Posibles inconsistencias menores",
-        "Calidad variable"
-      ],
-      recommendations: "Para análisis más preciso, configure OCR y análisis visual avanzado",
+      strengths:
+        aiProbability > 50
+          ? ["Calidad consistente", "Composición equilibrada"]
+          : ["Variedad natural", "Elementos orgánicos"],
+      weaknesses:
+        aiProbability > 50
+          ? ["Falta de imperfecciones naturales", "Patrones muy regulares"]
+          : ["Posibles inconsistencias menores", "Calidad variable"],
+      recommendations:
+        "Para análisis más preciso, configure OCR y análisis visual avanzado",
       imageAnalysis: {
         fileSize,
         width: imageWidth,
         height: imageHeight,
         format: fileType,
         hasText,
-        aspectRatio: (imageWidth / imageHeight).toFixed(2)
+        aspectRatio: (imageWidth / imageHeight).toFixed(2),
       },
       technicalDetails: {
         geminiScore: aiProbability,
