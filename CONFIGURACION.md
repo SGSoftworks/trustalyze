@@ -19,12 +19,15 @@
 ## Configuración de Firebase
 
 ### 1. Crear Proyecto en Firebase Console
+
 - Ve a [Firebase Console](https://console.firebase.google.com/)
 - Crea un nuevo proyecto
 - Habilita Firestore Database
 
 ### 2. Configurar Reglas de Firestore
+
 Las reglas ya están configuradas en `firestore.rules`:
+
 ```javascript
 rules_version = '2';
 service cloud.firestore {
@@ -40,6 +43,7 @@ service cloud.firestore {
 ```
 
 ### 3. Desplegar Reglas
+
 ```bash
 # Instalar Firebase CLI
 npm install -g firebase-tools
@@ -57,12 +61,14 @@ firebase deploy --only firestore:rules
 ## Configuración de Vercel
 
 ### 1. Variables de Entorno
+
 En el dashboard de Vercel, ve a Settings > Environment Variables y agrega:
 
 - `GEMINI_API_KEY`: Tu clave de API de Gemini
 - `GEMINI_API_ENDPOINT`: (Opcional) Endpoint personalizado
 
 ### 2. Despliegue
+
 ```bash
 # Instalar Vercel CLI
 npm install -g vercel
@@ -74,6 +80,7 @@ vercel --prod
 ## Configuración Local
 
 ### 1. Archivo .env.local
+
 Crea un archivo `.env.local` en la raíz del proyecto:
 
 ```env
@@ -89,6 +96,7 @@ GEMINI_API_ENDPOINT=https://generativelanguage.googleapis.com/v1beta/models/gemi
 ```
 
 ### 2. Ejecutar Localmente
+
 ```bash
 npm install
 npm run dev
@@ -105,14 +113,17 @@ La aplicación está diseñada para funcionar incluso sin configuración complet
 ## Solución de Problemas
 
 ### Error 500 en APIs
+
 - Verifica que las variables de entorno estén configuradas
 - Revisa los logs de Vercel en el dashboard
 
 ### Error de permisos de Firebase
+
 - Verifica que las reglas de Firestore estén desplegadas
 - Confirma que el proyecto ID sea correcto
 
 ### Dashboard vacío
+
 - Verifica la conexión a Firebase
 - Revisa la consola del navegador para errores
 

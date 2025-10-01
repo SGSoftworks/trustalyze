@@ -46,7 +46,9 @@ export class FirebaseService {
     } catch (error) {
       console.error("Error saving analysis:", error);
       // En lugar de fallar, generar un ID local y continuar
-      const localId = `local_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      const localId = `local_${Date.now()}_${Math.random()
+        .toString(36)
+        .substr(2, 9)}`;
       console.warn("Using local ID for analysis:", localId);
       return localId;
     }
@@ -105,7 +107,10 @@ export class FirebaseService {
     } catch (error) {
       console.error("Error getting analyses by kind:", error);
       // En lugar de fallar, retornar array vacío
-      console.warn("Firebase not available, returning empty analyses list for kind:", kind);
+      console.warn(
+        "Firebase not available, returning empty analyses list for kind:",
+        kind
+      );
       return [];
     }
   }

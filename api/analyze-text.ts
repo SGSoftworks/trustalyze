@@ -27,7 +27,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(503).json({
       error: "Service temporarily unavailable",
       details: "API key not configured, please try again",
-      fallback: true
+      fallback: true,
     });
   }
 
