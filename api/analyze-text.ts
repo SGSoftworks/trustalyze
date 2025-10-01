@@ -4,9 +4,9 @@ import axios from "axios";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Configurar CORS
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
   if (req.method === "OPTIONS") {
     return res.status(200).end();
@@ -22,9 +22,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Verificar variables de entorno
   if (!process.env.GEMINI_API_KEY) {
     console.error("GEMINI_API_KEY not found in environment variables");
-    return res.status(500).json({ 
-      error: "Server configuration error", 
-      details: "API key not configured" 
+    return res.status(500).json({
+      error: "Server configuration error",
+      details: "API key not configured",
     });
   }
 
@@ -73,11 +73,12 @@ Responde ÚNICAMENTE en formato JSON válido:
   "recommendations": "Recomendación específica para verificación adicional"
 }`;
 
-    const geminiEndpoint = process.env.GEMINI_API_ENDPOINT ||
+    const geminiEndpoint =
+      process.env.GEMINI_API_ENDPOINT ||
       "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
-    
+
     console.log("Calling Gemini API at:", geminiEndpoint);
-    
+
     const geminiResp = await axios.post(
       geminiEndpoint,
       {
@@ -184,13 +185,13 @@ Responde ÚNICAMENTE en formato JSON válido:
     return res.status(200).json(result);
   } catch (err: unknown) {
     console.error("Analysis error:", err);
-    
+
     let errorMessage = "Unknown error";
     let statusCode = 500;
-    
+
     if (err instanceof Error) {
       errorMessage = err.message;
-      
+
       // Manejar errores específicos de la API
       if (err.message.includes("API key")) {
         statusCode = 401;

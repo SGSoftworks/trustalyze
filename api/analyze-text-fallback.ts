@@ -3,9 +3,9 @@ import type { VercelRequest, VercelResponse } from "@vercel/node";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Configurar CORS
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
   if (req.method === "OPTIONS") {
     return res.status(200).end();
@@ -46,7 +46,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       factors.push({
         factor: "Oraciones muy largas",
         score: 0.8,
-        explanation: `Promedio de ${avgWordsPerSentence} palabras por oración, típico de IA`
+        explanation: `Promedio de ${avgWordsPerSentence} palabras por oración, típico de IA`,
       });
     }
 
@@ -56,7 +56,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       factors.push({
         factor: "Patrones repetitivos",
         score: 0.9,
-        explanation: "Se detectaron patrones de repetición característicos de IA"
+        explanation:
+          "Se detectaron patrones de repetición característicos de IA",
       });
     }
 
@@ -66,7 +67,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       factors.push({
         factor: "Ausencia de lenguaje emocional",
         score: 0.6,
-        explanation: "El texto carece de expresiones emocionales típicas humanas"
+        explanation:
+          "El texto carece de expresiones emocionales típicas humanas",
       });
     }
 
@@ -76,7 +78,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       factors.push({
         factor: "Uso de pronombres personales",
         score: 0.3,
-        explanation: "El uso de pronombres personales sugiere escritura humana"
+        explanation: "El uso de pronombres personales sugiere escritura humana",
       });
     }
 
@@ -86,7 +88,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       factors.push({
         factor: "Oraciones complejas",
         score: 0.7,
-        explanation: "Estructura de oraciones muy compleja, posiblemente generada por IA"
+        explanation:
+          "Estructura de oraciones muy compleja, posiblemente generada por IA",
       });
     }
 
@@ -99,7 +102,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       aiProbability,
       humanProbability,
       finalDetermination: aiProbability > 50 ? "IA" : "Humano",
-      confidenceLevel: aiProbability > 70 || aiProbability < 30 ? "Alta" : "Media",
+      confidenceLevel:
+        aiProbability > 70 || aiProbability < 30 ? "Alta" : "Media",
       methodology: "Análisis heurístico básico (modo fallback - sin Gemini)",
       interpretation: `El texto muestra características ${
         aiProbability > 50
@@ -108,24 +112,27 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }`,
       analysisFactors: factors,
       keyIndicators: [
-        hasRepetitivePatterns ? "Patrones repetitivos detectados" : "Sin patrones repetitivos",
-        hasEmotionalLanguage ? "Lenguaje emocional presente" : "Ausencia de lenguaje emocional",
-        hasPersonalPronouns ? "Pronombres personales utilizados" : "Sin pronombres personales"
+        hasRepetitivePatterns
+          ? "Patrones repetitivos detectados"
+          : "Sin patrones repetitivos",
+        hasEmotionalLanguage
+          ? "Lenguaje emocional presente"
+          : "Ausencia de lenguaje emocional",
+        hasPersonalPronouns
+          ? "Pronombres personales utilizados"
+          : "Sin pronombres personales",
       ],
-      strengths: aiProbability > 50 ? [
-        "Estructura consistente",
-        "Vocabulario técnico preciso"
-      ] : [
-        "Expresiones emocionales auténticas",
-        "Variedad en estructura de oraciones"
-      ],
-      weaknesses: aiProbability > 50 ? [
-        "Falta de personalidad única",
-        "Patrones predecibles"
-      ] : [
-        "Posibles inconsistencias menores",
-        "Estructura menos formal"
-      ],
+      strengths:
+        aiProbability > 50
+          ? ["Estructura consistente", "Vocabulario técnico preciso"]
+          : [
+              "Expresiones emocionales auténticas",
+              "Variedad en estructura de oraciones",
+            ],
+      weaknesses:
+        aiProbability > 50
+          ? ["Falta de personalidad única", "Patrones predecibles"]
+          : ["Posibles inconsistencias menores", "Estructura menos formal"],
       recommendations: "Para análisis más preciso, configure la API de Gemini",
       textAnalysis: {
         length: text.length,
@@ -148,7 +155,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(200).json(result);
   } catch (err: unknown) {
     console.error("Fallback analysis error:", err);
-    
+
     return res.status(500).json({
       error: "Fallback analysis failed",
       details: err instanceof Error ? err.message : "Unknown error",
