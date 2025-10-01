@@ -22,9 +22,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Verificar variables de entorno
   if (!process.env.GEMINI_API_KEY) {
     console.error("GEMINI_API_KEY not found in environment variables");
-    return res.status(500).json({
-      error: "Server configuration error",
-      details: "API key not configured",
+    // En lugar de fallar, usar el fallback
+    console.warn("Gemini API key not configured, redirecting to fallback");
+    return res.status(503).json({
+      error: "Service temporarily unavailable",
+      details: "API key not configured, please try again",
+      fallback: true
     });
   }
 
