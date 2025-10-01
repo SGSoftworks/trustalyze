@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { apiService } from "../lib/api";
 import { firebaseService } from "../lib/firebase";
 import { privacyService } from "../lib/privacy";
-import { AnalysisResult } from "../types";
+import type { AnalysisResult } from "../types";
 import { AnalysisResult as AnalysisResultComponent } from "../components/AnalysisResult";
 
 export function TextPage() {

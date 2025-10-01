@@ -1,4 +1,4 @@
-import { AnalysisResult as AnalysisResultType } from "../types";
+import type { AnalysisResult as AnalysisResultType } from "../types";
 import { AnalysisPipeline } from "./AnalysisPipeline";
 
 interface AnalysisResultProps {

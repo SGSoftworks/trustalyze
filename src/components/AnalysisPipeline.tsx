@@ -1,4 +1,4 @@
-import { PipelineStep } from "../types";
+import type { PipelineStep } from "../types";
 
 interface AnalysisPipelineProps {
   steps: PipelineStep[];
@@ -18,7 +18,6 @@ export function AnalysisPipeline({
         {steps.map((step, index) => {
           const isActive = index === currentStep;
           const isCompleted = index < currentStep;
-          const isPending = index > currentStep;
 
           return (
             <div
