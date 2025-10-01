@@ -24,16 +24,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // Análisis de video (versión simplificada para Vercel)
     const videoSize = file.size || 0;
-    
+
     // Simulación de análisis de video (en producción se usaría FFmpeg)
     const videoDuration = Math.random() * 300; // Simular duración aleatoria
-    const audioTranscription = "Transcripción de audio simulada - en producción se extraería del video";
-    const frameAnalysis = "Análisis de frame simulado - en producción se extraería del video";
-    
+    const audioTranscription =
+      "Transcripción de audio simulada - en producción se extraería del video";
+    const frameAnalysis =
+      "Análisis de frame simulado - en producción se extraería del video";
+
     // Indicadores de deepfake simulados
     const deepfakeIndicators: string[] = [
       "Análisis de consistencia facial",
-      "Detección de artefactos de generación", 
+      "Detección de artefactos de generación",
       "Verificación de sincronización audio-video",
       "Análisis de iluminación y sombras",
       "Detección de patrones de parpadeo",
